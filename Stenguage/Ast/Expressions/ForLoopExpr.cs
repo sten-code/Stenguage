@@ -64,6 +64,8 @@ namespace Stenguage.Ast.Expressions
                         res.Reset();
                         return res;
                     }
+
+                    if (res.ShouldReturn()) return res;
                 }
             }
 

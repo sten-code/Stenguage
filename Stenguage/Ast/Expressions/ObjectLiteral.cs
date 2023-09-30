@@ -1,4 +1,5 @@
-﻿using Stenguage.Runtime;
+﻿using Stenguage.Errors;
+using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
 namespace Stenguage.Ast.Expressions
@@ -23,6 +24,8 @@ namespace Stenguage.Ast.Expressions
                 if (property.Value == null)
                 {
                     value = env.LookupVar(property.Key);
+                    if (value == null) 
+                        return res.Failure(new Error($"Cannot resolve '{property.Key}', because it doesn't exist.", env.SourceCode, Start, End));
                 }
                 else
                 {

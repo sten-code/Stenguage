@@ -1,4 +1,6 @@
-﻿using Stenguage.Runtime;
+﻿using Stenguage.Errors;
+using Stenguage.Runtime;
+using Stenguage.Runtime.Values;
 
 namespace Stenguage.Ast.Expressions
 {
@@ -13,7 +15,10 @@ namespace Stenguage.Ast.Expressions
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
-            return new RuntimeResult().Success(env.LookupVar(Symbol));
+            RuntimeResult res = new RuntimeResult();
+            RuntimeValue value = env.LookupVar(Symbol);
+            if (value == null) return res.Failure(new Error($"Cannot resolve '{Symbol}', because it doesn't exist.", env.SourceCode, Start, End));
+            return res.Success(value);
         }
     }
 

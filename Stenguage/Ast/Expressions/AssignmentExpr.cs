@@ -24,7 +24,7 @@ namespace Stenguage.Ast.Expressions
             if (Assigne.Kind == NodeType.Identifier)
             {
                 return res.Success(env.AssignVar(((Identifier)Assigne).Symbol, value));
-            }
+            }   
             else if (Assigne.Kind == NodeType.MemberExpr)
             {
                 MemberExpr memberExpr = (MemberExpr)Assigne;
@@ -34,7 +34,9 @@ namespace Stenguage.Ast.Expressions
                 RuntimeValue index;
                 if (memberExpr.Property.Kind == NodeType.Identifier)
                 {
-                    index = new StringValue(((Identifier)memberExpr.Property).Symbol, env.SourceCode, memberExpr.Start, memberExpr.End);
+                    string var = ((Identifier)memberExpr.Property).Symbol;
+                    index = env.LookupVar(var);
+                    if (index == null) return res.Failure(new Error($"Cannot resolve '{var}', because it doesn't exist.", env.SourceCode, Start, End));
                 }
                 else
                 {
@@ -50,5 +52,6 @@ namespace Stenguage.Ast.Expressions
 
             return res.Failure(new Error($"Can only assign a value to an identifier, got '{Assigne.Kind}'.", env.SourceCode, Start, End));
         }
+
     }
 }

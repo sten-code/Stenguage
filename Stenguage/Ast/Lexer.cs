@@ -61,6 +61,7 @@ namespace Stenguage.Ast
 
                 else if (CurrentChar == '/')
                 {
+                    Position start = Position.Copy();
                     NextChar();
                     if (CurrentChar == '/')
                     {
@@ -82,14 +83,18 @@ namespace Stenguage.Ast
                             }
                         }
                     }
+                    else if (CurrentChar == '=')
+                    {
+                        tokens.Add(new Token("/=", TokenType.BinaryOperator, start, Position.Copy()));
+                    }
                     else
                     {
-                        Console.WriteLine("Error: '/' doesn't exist, did you mean '//'?");
-                        return new List<Token>();
+                        tokens.Add(new Token("/", TokenType.BinaryOperator, start, start.Copy()));
+                        continue;
                     }
                 }
 
-                else if (CurrentChar == '+' || CurrentChar == '-' || CurrentChar == '*' || CurrentChar == '/' || CurrentChar == '%' || CurrentChar == '^')
+                else if (CurrentChar == '+' || CurrentChar == '-' || CurrentChar == '*' || CurrentChar == '%' || CurrentChar == '^')
                 {
                     Position start = Position.Copy();
                     string op = CurrentChar.ToString();
@@ -104,6 +109,7 @@ namespace Stenguage.Ast
                         continue;
                     }
                 }
+
                 else if (CurrentChar == '&')
                 {
                     Position start = Position.Copy();
@@ -184,6 +190,7 @@ namespace Stenguage.Ast
                         continue;
                     }
                 }
+
                 else if (CurrentChar == '\"')
                     tokens.Add(GetString());
                 else if (".0123456789".Contains(CurrentChar))

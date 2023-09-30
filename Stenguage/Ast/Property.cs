@@ -7,7 +7,7 @@ namespace Stenguage.Ast
         public string Key { get; set; }
         public Expr Value { get; set; }
 
-        public Property(string key, Expr value, Position start, Position end)
+        public Property(string key, Expr value)
         {
             Key = key;
             Value = value;

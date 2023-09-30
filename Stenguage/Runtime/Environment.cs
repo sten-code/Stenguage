@@ -78,7 +78,6 @@ namespace Stenguage.Runtime
                     {
                         Console.Write(arg);
                     }
-                    Console.WriteLine();
                 }
 
                 string input = Console.ReadLine();
@@ -335,15 +334,10 @@ namespace Stenguage.Runtime
         public Environment Resolve(string name)
         {
             if (Variables.ContainsKey(name))
-            {
                 return this;
-            }
 
             if (Parent == null)
-            {
-                Console.WriteLine($"Error: Cannot resolve '{name}', because it doesn't exist.");
                 return null;
-            }
 
             return Parent.Resolve(name);
         }

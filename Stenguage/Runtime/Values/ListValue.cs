@@ -1,4 +1,5 @@
 ﻿using Stenguage.Errors;
+using Stenguage.Utils;
 
 namespace Stenguage.Runtime.Values
 {
@@ -42,7 +43,7 @@ namespace Stenguage.Runtime.Values
             List<RuntimeValue> values = new List<RuntimeValue>();
             for (int i = 0; i < mul.Value; i++)
             {
-                values.AddRange(new List<RuntimeValue>(Items));
+                values.AddRange(Items.Copy());
             }
             return new RuntimeResult().Success(new ListValue(values, SourceCode, start, end));
         }

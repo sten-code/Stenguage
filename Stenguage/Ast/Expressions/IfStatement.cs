@@ -22,11 +22,11 @@ namespace Stenguage.Ast.Expressions
             RuntimeValue condition = res.Register(Condition.Evaluate(env));
             if (res.ShouldReturn()) return res;
 
-            if (condition.Type != Runtime.Values.RuntimeValueType.Null && 
-                condition.Type != Runtime.Values.RuntimeValueType.Number && 
-                condition.Type != Runtime.Values.RuntimeValueType.Boolean || condition.Type == Runtime.Values.RuntimeValueType.Number && 
-                ((NumberValue)condition).Value != 0 || condition.Type == Runtime.Values.RuntimeValueType.Boolean && ((BooleanValue)condition).Value)
-            {
+            if (condition.Type != RuntimeValueType.Null && 
+                condition.Type != RuntimeValueType.Number && 
+                condition.Type != RuntimeValueType.Boolean || condition.Type == RuntimeValueType.Number && 
+                ((NumberValue)condition).Value != 0 || condition.Type == RuntimeValueType.Boolean && ((BooleanValue)condition).Value)
+            {       
                 RuntimeValue result = new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
                 foreach (Expr expr in Body)
                 {

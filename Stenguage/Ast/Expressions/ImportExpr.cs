@@ -1,7 +1,9 @@
 ﻿using Stenguage.Errors;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
+using System;
 using System.Reflection;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Stenguage.Ast.Expressions
 {
@@ -73,11 +75,60 @@ namespace Stenguage.Ast.Expressions
 
             foreach (Type type in dll.GetExportedTypes())
             {
-                try
+                MethodInfo[] methods = type.GetMethods();
+                foreach (MethodInfo method in methods)
                 {
-                    type.InvokeMember("Initialize", BindingFlags.InvokeMethod, null, Activator.CreateInstance(type), new object[] { env });
+                    ParameterInfo[] parameters = method.GetParameters();
+
+                    if (!method.IsStatic)
+                        continue;
+
+                    if (method.ReturnType != typeof(RuntimeResult))
+                        continue;
+
+                    RuntimeValue value = env.LookupVar(method.Name);
+                    if (value.Type != RuntimeValueType.Null)
+                    {
+                        env.AssignVar(method.Name, new NativeFnValue((args, scope, start, end) =>
+                        {
+                            RuntimeResult res = new RuntimeResult();
+                            if (args.Count != parameters.Length - 3)
+                            {
+                                // Its not this method so just call the other method;
+                                return ((NativeFnValue)value).Call(args, scope, start, end);
+                            }
+
+                            for (int i = 0; i < args.Count; i++)
+                            {
+                                Type expected = parameters[i + 3].ParameterType;
+                                Type got = args[i].GetType();
+                                if (expected != got && expected != typeof(RuntimeValue))
+                                    return ((NativeFnValue)value).Call(args, scope, start, end);
+                            }
+
+                            return (RuntimeResult)method.Invoke(null, new object[] { scope, start, end }.Concat(args).ToArray());
+                        }));
+                    }
+                    else
+                    {
+                        env.DeclareVar(method.Name, new NativeFnValue((args, scope, start, end) =>
+                        {
+                            RuntimeResult res = new RuntimeResult();
+                            if (args.Count != parameters.Length - 3)
+                                return res.Failure(new Error($"Invalid parameter count, expected {parameters.Length}, got {args.Count}.", scope.SourceCode, start, end));
+
+                            for (int i = 0; i < args.Count; i++)
+                            {
+                                Type expected = parameters[i + 3].ParameterType;
+                                Type got = args[i].GetType();
+                                if (expected != got)
+                                    return res.Failure(new Error($"Invalid parameter type, expected a '{expected.Name}' type, got '{got.Name}'.", scope.SourceCode, start, end));
+                            }
+
+                            return (RuntimeResult)method.Invoke(null, new object[] { scope, start, end }.Concat(args).ToArray());
+                        }), false);
+                    }
                 }
-                catch { }
             }
 
             return res;

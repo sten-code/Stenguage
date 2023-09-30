@@ -48,7 +48,7 @@ namespace Stenguage.Runtime.Values
             RuntimeResult res = new RuntimeResult();
             if (index.Type != RuntimeValueType.String)
             {
-                return res.Failure(new Error($"Cannot get index of an object with '{index.Type}'.", SourceCode, start, end));
+                return res.Failure(new Error($"Cannot set index of an object with '{index.Type}'.", SourceCode, start, end));
             }
 
             Properties[((StringValue)index).Value] = value;

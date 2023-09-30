@@ -22,7 +22,7 @@ namespace Stenguage.Ast
 
         private Token Eat()
         {
-            Token token = Tokens[0];
+            Token token = At();
             Tokens.RemoveAt(0);
             return token;
         }
@@ -118,8 +118,7 @@ namespace Stenguage.Ast
             {
                 Token token = Eat();
                 end = token.End.Copy();
-                Identifier expr = new Identifier(token.Value, token.Start.Copy(), token.End.Copy());
-                path = Path.Combine(path, expr.Symbol);
+                path = Path.Combine(path, token.Value);
                 if (At().Type != TokenType.Period)
                 {
                     break;
@@ -518,7 +517,7 @@ namespace Stenguage.Ast
                 if (At().Type == TokenType.Comma)
                 {
                     Eat();
-                    properties.Add(new Property(key, null, token.Start.Copy(), token.End.Copy()));
+                    properties.Add(new Property(key, null));
                     continue;
                 }
 
@@ -528,7 +527,7 @@ namespace Stenguage.Ast
                 Expr value = res.Register(ParseExpr());
                 if (res.ShouldReturn()) return res;
 
-                properties.Add(new Property(key, value, token.Start.Copy(), value.End.Copy()));
+                properties.Add(new Property(key, value));
                 if (At().Type != TokenType.CloseBrace)
                 {
                     res.Register(Expect(TokenType.Comma));

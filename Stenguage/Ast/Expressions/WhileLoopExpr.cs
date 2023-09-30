@@ -21,14 +21,21 @@ namespace Stenguage.Ast.Expressions
             RuntimeValue conditionValue = res.Register(Condition.Evaluate(env));
             if (res.ShouldReturn()) return res;
 
-            if (conditionValue.Type != Runtime.Values.RuntimeValueType.Boolean)
+            if (conditionValue.Type != RuntimeValueType.Boolean)
             {
                 return res.Failure(new Error($"Condition must be a boolean, got '{conditionValue.Type}'.", env.SourceCode, Condition.Start, Condition.End));
             }
             BooleanValue condition = (BooleanValue)conditionValue;
 
+            int skipCount = 0;
             while (true)
             {
+                if (skipCount > 0)
+                {
+                    skipCount--;
+                    continue;
+                }
+
                 if (!condition.Value)
                     break;
 
@@ -36,14 +43,29 @@ namespace Stenguage.Ast.Expressions
                 foreach (Expr expr in Body)
                 {
                     RuntimeValue result = res.Register(expr.Evaluate(scope));
+                    if (res.Error != null) return res;
+
                     if (res.ReturnValue != null)
                         return res.Success(result);
-                    if (res.ShouldReturn())
+
+                    if (res.SkipValue != null)
                     {
-                        if (res.LoopBreak || res.LoopContinue)
-                            res.Reset();
+                        skipCount = (int)res.SkipValue.Value;
+                        res.SkipValue = null;
+                        break;
+                    }
+                    if (res.LoopContinue)
+                    {
+                        res.Reset();
+                        break;
+                    }
+                    if (res.LoopBreak)
+                    {
+                        res.Reset();
                         return res;
                     }
+
+                    if (res.ShouldReturn()) return res;
                 }
 
                 conditionValue = res.Register(Condition.Evaluate(env));

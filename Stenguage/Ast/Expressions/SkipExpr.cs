@@ -18,7 +18,7 @@ namespace Stenguage.Ast.Expressions
             RuntimeResult res = new RuntimeResult();
             RuntimeValue amount = res.Register(SkipAmount.Evaluate(env));
             if (res.ShouldReturn()) return res;
-            if (amount.Type != Runtime.Values.RuntimeValueType.Number)
+            if (amount.Type != RuntimeValueType.Number)
             {
                 return res.Failure(new Error("Can only skip on a number.", env.SourceCode, Start, End));
             }

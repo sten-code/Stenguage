@@ -29,14 +29,14 @@ namespace Stenguage.Ast.Expressions
             RuntimeValue fn = res.Register(Caller.Evaluate(env));
             if (res.ShouldReturn()) return res;
 
-            if (fn.Type == Runtime.Values.RuntimeValueType.NativeFn)
+            if (fn.Type == RuntimeValueType.NativeFn)
             {
                 NativeFnValue fnValue = (NativeFnValue)fn;
                 RuntimeValue value = res.Register(fnValue.Call(args, env, Start, End));
                 if (res.ShouldReturn()) return res;
                 return res.Success(value);
             }
-            else if (fn.Type == Runtime.Values.RuntimeValueType.Function)
+            else if (fn.Type == RuntimeValueType.Function)
             {
                 FunctionValue fnValue = (FunctionValue)fn;
                 Runtime.Environment scope = new Runtime.Environment(env.SourceCode, fnValue.Environment);

@@ -1,6 +1,5 @@
 ﻿using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
-using System.Xml.Linq;
 
 namespace Stenguage.Ast.Expressions
 {

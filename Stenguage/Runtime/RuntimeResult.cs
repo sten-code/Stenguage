@@ -12,6 +12,11 @@ namespace Stenguage.Runtime
         public RuntimeValue ReturnValue { get; set; }
         public NumberValue SkipValue { get; set; }
 
+        public static RuntimeResult Null(string sourceCode = "", Position start = null, Position end = null)
+        {
+            return new RuntimeResult().Success(new NullValue(sourceCode, start == null ? new Position(0, 0, 0) : start, end == null ? new Position(0, 0, 0) : end));
+        }
+
         public RuntimeResult()
         {
             Value = new NullValue("", new Position(0, 0, 0), new Position(0, 0, 0));
