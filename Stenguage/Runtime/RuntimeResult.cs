@@ -19,13 +19,13 @@ namespace Stenguage.Runtime
 
         public RuntimeResult()
         {
-            Value = new NullValue("", new Position(0, 0, 0), new Position(0, 0, 0));
+            Value = null;
             Reset();
         }
 
         public void Reset()
         {
-            Value = new NullValue("", new Position(0, 0, 0), new Position(0, 0, 0));
+            Value = null;
             Error = null;
             LoopContinue = false;
             LoopBreak = false;

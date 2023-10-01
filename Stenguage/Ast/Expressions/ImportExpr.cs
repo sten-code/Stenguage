@@ -3,7 +3,6 @@ using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 using System;
 using System.Reflection;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Stenguage.Ast.Expressions
 {
@@ -34,7 +33,7 @@ namespace Stenguage.Ast.Expressions
                     if (res.ShouldReturn()) return res;
                     break;
                 case ".sten":
-                    res.Register(ImportStenFile(file, env));
+                    res.Register(ImportStenFile(file, env, IsStaticImport, Names));
                     if (res.ShouldReturn()) return res;
                     break;
             }
@@ -42,11 +41,14 @@ namespace Stenguage.Ast.Expressions
             return res;
         }
 
-        public RuntimeResult ImportStenFile(string file, Runtime.Environment env)
+        public RuntimeResult ImportStenFile(string file, Runtime.Environment env, bool isStaticImport, List<string> names)
         {
             RuntimeResult res = new RuntimeResult();
             if (!File.Exists(file))
-                return res;
+                return res.Failure(new Error($"Couldn't find file '{file}'", env.SourceCode, Start, End));
+
+            if (names.Count > 0)
+                isStaticImport = true;
 
             string code = File.ReadAllText(file);
             ParseResult r = new Parser(code).ProduceAST();
@@ -55,7 +57,31 @@ namespace Stenguage.Ast.Expressions
 
             Runtime.Environment localEnv = new Runtime.Environment(code);
             RuntimeResult result = r.Expr.Evaluate(localEnv);
-            env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(localEnv.Variables, code, new Position(0, 0, 0), new Position(0, 0, 0)), true);
+            if (isStaticImport)
+            {
+                if (names.Count > 0)
+                {
+                    foreach (string name in names)
+                    {
+                        if (localEnv.Variables.ContainsKey(name))
+                            env.DeclareVar(name, localEnv.Variables[name], true);
+                        else
+                            return res.Failure(new Error($"The name '{name}' doesn't exist in '{file}'.", env.SourceCode, Start, End));
+                    }
+                } else
+                {
+                    foreach (KeyValuePair<string, RuntimeValue> variable in localEnv.Variables)
+                    {
+                        // Only import it if its currently undefined
+                        if (env.LookupVar(variable.Key) == null)
+                            env.DeclareVar(variable.Key, variable.Value, true);
+                    }
+                }
+            }
+            else
+            {
+                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(localEnv.Variables, code, new Position(0, 0, 0), new Position(0, 0, 0)), true);
+            }
             return result;
         }
 
@@ -218,13 +244,14 @@ namespace Stenguage.Ast.Expressions
             if (res.ShouldReturn()) return res;
             if (success) found = true;
 
-            (r, success) = ImportFromOrigin(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "libs"), env);
+            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "libs");
+            (r, success) = ImportFromOrigin(path, env);
             res.Register(r);
             if (res.ShouldReturn()) return res;
             if (success) found = true;
 
             if (!found)
-                return res.Failure(new Error("File not found", env.SourceCode, Start, End));
+                return res.Failure(new Error($"Couldn't find the file to import", env.SourceCode, Start, End));
 
             return res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
         }
