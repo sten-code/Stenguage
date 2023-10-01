@@ -34,80 +34,60 @@ namespace Stenguage
 
         public static void Main(string[] args)
         {
-            string code = File.ReadAllText("primes.sten");
-            ParseResult parseResult = new Parser(code).ProduceAST();
-            if (parseResult.ShouldReturn())
+            if (args.Length != 0)
             {
-                Console.WriteLine(parseResult.Error);
+                string code = File.ReadAllText(args[0]);
+                ParseResult parseResult = new Parser(code).ProduceAST();
+                if (parseResult.ShouldReturn())
+                {
+                    Console.WriteLine(parseResult.Error);
+                    return;
+                }
+                //Console.WriteLine(parseResult.ToJson().FormatJson());
+
+                RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
+                if (result.Error != null)
+                {
+                    Console.WriteLine(result.Error);
+                }
+                else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
+                {
+                    LogResult(result.Value);
+                }
                 return;
             }
-            //Console.WriteLine(parseResult.ToJson().FormatJson());
 
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            if (result.Error != null)
+            Console.WriteLine("Stenguage v0.1");
+
+            Runtime.Environment env = new Runtime.Environment("");
+
+            while (true)
             {
-                Console.WriteLine(result.Error);
+                Console.Write(">>> ");
+                string input = Console.ReadLine();
+                if (input == null)
+                    continue;
+                env.SourceCode = input;
+
+                ParseResult parseResult = new Parser(input).ProduceAST();
+                if (parseResult.ShouldReturn())
+                {
+                    Console.WriteLine(parseResult.Error);
+                    continue;
+                }
+                //Console.WriteLine(parseResult.ToJson().FormatJson());
+
+                // Run the code
+                RuntimeResult result = parseResult.Expr.Evaluate(env);
+                if (result.Error != null)
+                {
+                    Console.WriteLine(result.Error);
+                }
+                else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
+                {
+                    LogResult(result.Value);
+                }
             }
-            else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
-            {
-                LogResult(result.Value);
-            }
-            return;
-
-            //if (args.Length != 0)
-            //{
-            //    string code = File.ReadAllText(args[0]);
-            //    ParseResult parseResult = new Parser(code).ProduceAST();
-            //    if (parseResult.ShouldReturn())
-            //    {
-            //        Console.WriteLine(parseResult.Error);
-            //        return;
-            //    }
-            //    //Console.WriteLine(parseResult.ToJson().FormatJson());
-
-            //    RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            //    if (result.Error != null)
-            //    {
-            //        Console.WriteLine(result.Error);
-            //    }
-            //    else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
-            //    {
-            //        LogResult(result.Value);
-            //    }
-            //    return;
-            //}
-
-            //Console.WriteLine("Stenguage v0.1");
-
-            //Runtime.Environment env = new Runtime.Environment("");
-
-            //while (true)
-            //{
-            //    Console.Write(">>> ");
-            //    string input = Console.ReadLine();
-            //    if (input == null)
-            //        continue;
-            //    env.SourceCode = input;
-
-            //    ParseResult parseResult = new Parser(input).ProduceAST();
-            //    if (parseResult.ShouldReturn())
-            //    {
-            //        Console.WriteLine(parseResult.Error);
-            //        continue;
-            //    }
-            //    //Console.WriteLine(parseResult.ToJson().FormatJson());
-
-            //    // Run the code
-            //    RuntimeResult result = parseResult.Expr.Evaluate(env);
-            //    if (result.Error != null)
-            //    {
-            //        Console.WriteLine(result.Error);
-            //    }
-            //    else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
-            //    {
-            //        LogResult(result.Value);
-            //    }
-            //}
         }
 
     }
