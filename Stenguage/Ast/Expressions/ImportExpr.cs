@@ -10,10 +10,14 @@ namespace Stenguage.Ast.Expressions
     public class ImportExpr : Expr
     {
         public string Import { get; set; }
+        public bool IsStaticImport { get; set; }
+        public List<string> Names { get; set; }
 
-        public ImportExpr(string import, Position start, Position end) : base(NodeType.Import, start, end)
+        public ImportExpr(string import, bool isStaticImport, List<string> names, Position start, Position end) : base(NodeType.Import, start, end)
         {
             Import = import;
+            IsStaticImport = isStaticImport;
+            Names = names;
         }
 
         public RuntimeResult ImportFile(string file, Runtime.Environment env)
@@ -26,7 +30,7 @@ namespace Stenguage.Ast.Expressions
             switch (ext)
             {
                 case ".dll":
-                    res.Register(ImportDLLFile(file, env));
+                    res.Register(ImportDLLFile(file, env, IsStaticImport, Names));
                     if (res.ShouldReturn()) return res;
                     break;
                 case ".sten":
@@ -55,9 +59,12 @@ namespace Stenguage.Ast.Expressions
             return result;
         }
 
-        public RuntimeResult ImportDLLFile(string file, Runtime.Environment env)
+        public RuntimeResult ImportDLLFile(string file, Runtime.Environment env, bool isStaticImport, List<string> names)
         {
             RuntimeResult res = new RuntimeResult();
+
+            if (names.Count > 0)
+                isStaticImport = true;
 
             Assembly dll;
             try
@@ -73,6 +80,8 @@ namespace Stenguage.Ast.Expressions
                 return res.Failure(new Error("Bad DLL image", env.SourceCode, Start, End));
             }
 
+            Dictionary<string, RuntimeValue> properties = new Dictionary<string, RuntimeValue>();
+
             foreach (Type type in dll.GetExportedTypes())
             {
                 MethodInfo[] methods = type.GetMethods();
@@ -80,16 +89,38 @@ namespace Stenguage.Ast.Expressions
                 {
                     ParameterInfo[] parameters = method.GetParameters();
 
+                    // only import methods that are marked as static
                     if (!method.IsStatic)
                         continue;
 
+                    // only import methods that return a runtimeresult
                     if (method.ReturnType != typeof(RuntimeResult))
                         continue;
 
-                    RuntimeValue value = env.LookupVar(method.Name);
-                    if (value.Type != RuntimeValueType.Null)
+                    if (names.Count > 0)
                     {
-                        env.AssignVar(method.Name, new NativeFnValue((args, scope, start, end) =>
+                        if (!names.Contains(method.Name))
+                            continue;
+                    }
+
+                    // If its a static import it will be defined differently than a normal import
+                    bool isDefined;
+                    RuntimeValue value;
+                    if (isStaticImport)
+                    {
+                        value = env.LookupVar(method.Name);
+                        isDefined = value != null;
+                    }
+                    else
+                    {
+                        isDefined = properties.ContainsKey(method.Name);
+                        value = isDefined ? properties[method.Name] : null;
+                    }
+
+                    if (isDefined)
+                    {
+                        // Reassign the value to automatically check which type it corrosponds to
+                        NativeFnValue newFn = new NativeFnValue((args, scope, start, end) =>
                         {
                             RuntimeResult res = new RuntimeResult();
                             if (args.Count != parameters.Length - 3)
@@ -107,11 +138,16 @@ namespace Stenguage.Ast.Expressions
                             }
 
                             return (RuntimeResult)method.Invoke(null, new object[] { scope, start, end }.Concat(args).ToArray());
-                        }));
+                        });
+
+                        if (isStaticImport)
+                            env.AssignVar(method.Name, newFn);
+                        else
+                            properties[method.Name] = newFn;
                     }
                     else
                     {
-                        env.DeclareVar(method.Name, new NativeFnValue((args, scope, start, end) =>
+                        NativeFnValue fn = new NativeFnValue((args, scope, start, end) =>
                         {
                             RuntimeResult res = new RuntimeResult();
                             if (args.Count != parameters.Length - 3)
@@ -126,10 +162,18 @@ namespace Stenguage.Ast.Expressions
                             }
 
                             return (RuntimeResult)method.Invoke(null, new object[] { scope, start, end }.Concat(args).ToArray());
-                        }), false);
+                        });
+
+                        if (isStaticImport)
+                            env.DeclareVar(method.Name, fn, false);
+                        else
+                            properties[method.Name] = fn;
                     }
                 }
             }
+
+            if (!isStaticImport)
+                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(properties, env.SourceCode, Start, End), true);
 
             return res;
         }

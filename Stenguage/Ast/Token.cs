@@ -14,7 +14,7 @@
         For, While,      // for, while
         Break, Continue, // break, continue
         Skip,            // skip
-        Import,          // import
+        Import, From,    // import, from
 
         // Operations and Groupings
         OpenParen, CloseParen, // ()
@@ -54,6 +54,7 @@
             ["break"] = TokenType.Break,
             ["continue"] = TokenType.Continue,
             ["import"] = TokenType.Import,
+            ["from"] = TokenType.From,
             ["skip"] = TokenType.Skip
         };
 

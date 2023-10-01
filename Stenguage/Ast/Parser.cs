@@ -96,6 +96,9 @@ namespace Stenguage.Ast
                 case TokenType.Import:
                     expr = res.Register(ParseImportExpr());
                     break;
+                case TokenType.From:
+                    expr = res.Register(ParseFromExpr());
+                    break;
                 default:
                     expr = res.Register(ParseExpr());
                     break;
@@ -132,7 +135,64 @@ namespace Stenguage.Ast
                 Eat();
             }
 
-            return res.Success(new ImportExpr(path, start, end));
+            return res.Success(new ImportExpr(path, false, new List<string>(), start, end));
+        }
+
+        private ParseResult ParseFromExpr()
+        {
+            ParseResult res = new ParseResult();
+            // from <module path> import <names>
+
+            // from keyword
+            res.Register(Expect(TokenType.From));
+            if (res.ShouldReturn()) return res;
+            Position start = At().Start.Copy();
+            Position end = At().End.Copy();
+
+            // module path
+            string path = "";
+            while (At().Type != TokenType.EOF)
+            {
+                Token token = Eat();
+                end = token.End.Copy();
+                path = Path.Combine(path, token.Value);
+                if (At().Type != TokenType.Period)
+                {
+                    break;
+                }
+                if (At().Value == "*" && At().Type == TokenType.BinaryOperator)
+                {
+                    end = Eat().End.Copy();
+                    path += "*";
+                    break;
+                }
+                Eat();
+            }
+
+            // import keywords
+            res.Register(Expect(TokenType.Import));
+            if (res.ShouldReturn()) return res;
+
+            bool isStaticImport = false;
+            List<string> names = new List<string>();
+            while (At().Type != TokenType.EOF)
+            {
+                Token token = Eat();
+                end = token.End.Copy();
+                if (token.Value == "*" && token.Type == TokenType.BinaryOperator)
+                {
+                    end = token.End.Copy();
+                    isStaticImport = true;
+                    break;
+                }
+
+                names.Add(token.Value);
+                if (At().Type != TokenType.Comma)
+                    break;
+                Eat();
+            }
+
+            return res.Success(new ImportExpr(path, isStaticImport, names, start, end));
         }
 
         private ParseResult ParseWhileExpr()

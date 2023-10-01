@@ -1,5 +1,6 @@
 ﻿using Stenguage.Errors;
 using Stenguage.Utils;
+using System.Collections.Generic;
 
 namespace Stenguage.Runtime.Values
 {
@@ -32,6 +33,17 @@ namespace Stenguage.Runtime.Values
         public override RuntimeResult Add(RuntimeValue right, Position start, Position end)
         {
             return new RuntimeResult().Success(new ListValue(new List<RuntimeValue>(Items) { right }, SourceCode, start, end));
+        }
+        public override RuntimeResult Sub(RuntimeValue right, Position start, Position end)
+        {
+            if (right.Type != RuntimeValueType.Number)
+            {
+                return new RuntimeResult().Failure(new OperationError("-", Type, right.Type, SourceCode, start, end));
+            }
+
+            List<RuntimeValue> newList = new List<RuntimeValue>(Items);
+            newList.RemoveAt((int)((NumberValue)right).Value);
+            return new RuntimeResult().Success(new ListValue(newList, SourceCode, start, end));
         }
         public override RuntimeResult Mul(RuntimeValue right, Position start, Position end)
         {

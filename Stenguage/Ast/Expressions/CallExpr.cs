@@ -28,7 +28,6 @@ namespace Stenguage.Ast.Expressions
 
             RuntimeValue fn = res.Register(Caller.Evaluate(env));
             if (res.ShouldReturn()) return res;
-
             if (fn.Type == RuntimeValueType.NativeFn)
             {
                 NativeFnValue fnValue = (NativeFnValue)fn;

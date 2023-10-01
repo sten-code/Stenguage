@@ -66,7 +66,7 @@ namespace Stenguage.Runtime
                     Console.Write(arg.ToString() + " ");
                 }
                 Console.WriteLine();
-                return new RuntimeResult().Success(new NullValue(scope.SourceCode, start, end));
+                return RuntimeResult.Null(scope.SourceCode, start, end);
             }), true);
 
             env.DeclareVar("input", new NativeFnValue((args, scope, start, end) =>
@@ -327,7 +327,7 @@ namespace Stenguage.Runtime
         {
             Environment env = Resolve(name);
             if (env == null)
-                return new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
+                return null;
             return env.Variables[name];
         }
 

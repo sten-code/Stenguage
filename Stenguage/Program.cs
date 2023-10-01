@@ -44,6 +44,7 @@ namespace Stenguage
                     return;
                 }
                 //Console.WriteLine(parseResult.ToJson().FormatJson());
+
                 RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
                 if (result.Error != null)
                 {
