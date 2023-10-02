@@ -2,6 +2,7 @@
 using Stenguage.Json;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
+using System.Reflection;
 
 namespace Stenguage
 {

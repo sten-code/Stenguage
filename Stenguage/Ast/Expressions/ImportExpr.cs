@@ -108,8 +108,21 @@ namespace Stenguage.Ast.Expressions
 
             Dictionary<string, RuntimeValue> properties = new Dictionary<string, RuntimeValue>();
 
+            Console.WriteLine(Directory.GetCurrentDirectory());
             foreach (Type type in dll.GetExportedTypes())
             {
+                Console.WriteLine("Type: " + type.Name);
+                if (type.IsSubclassOf(typeof(RuntimeValue)))
+                {
+                    // Declare a constructor
+                    env.DeclareVar(type.Name, new NativeFnValue((args, scope, start, end) =>
+                    {
+                        return new RuntimeResult().Success((RuntimeValue)Activator.CreateInstance(type, new object[] { scope.SourceCode, start, end }.Concat(args).ToArray()));
+                    }), true);
+
+                    continue;
+                }
+
                 MethodInfo[] methods = type.GetMethods();
                 foreach (MethodInfo method in methods)
                 {
