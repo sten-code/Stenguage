@@ -1,7 +1,6 @@
 ﻿using Stenguage.Errors;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
-using System;
 using System.Reflection;
 
 namespace Stenguage.Ast.Expressions
@@ -80,7 +79,7 @@ namespace Stenguage.Ast.Expressions
             }
             else
             {
-                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(localEnv.Variables, code, new Position(0, 0, 0), new Position(0, 0, 0)), true);
+                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(code, new Position(0, 0, 0), new Position(0, 0, 0), localEnv.Variables), true);
             }
             return result;
         }
@@ -108,23 +107,61 @@ namespace Stenguage.Ast.Expressions
 
             Dictionary<string, RuntimeValue> properties = new Dictionary<string, RuntimeValue>();
 
-            Console.WriteLine(Directory.GetCurrentDirectory());
             foreach (Type type in dll.GetExportedTypes())
             {
-                Console.WriteLine("Type: " + type.Name);
-                if (type.IsSubclassOf(typeof(RuntimeValue)))
+                if (type.IsSubclassOf(typeof(ObjectValue)))
                 {
                     // Declare a constructor
                     env.DeclareVar(type.Name, new NativeFnValue((args, scope, start, end) =>
                     {
-                        return new RuntimeResult().Success((RuntimeValue)Activator.CreateInstance(type, new object[] { scope.SourceCode, start, end }.Concat(args).ToArray()));
+                        ObjectValue obj = (ObjectValue)Activator.CreateInstance(type, new object[] { scope.SourceCode, start, end }.Concat(args).ToArray());
+
+                        foreach (MethodInfo method in type.GetMethods())
+                        {
+                            if (!method.IsPublic)
+                                continue;
+
+                            if (method.ReturnType != typeof(RuntimeResult))
+                                continue;
+
+                            obj.Properties[method.Name] = new NativeFnValue((args, scope, start, end) =>
+                            {
+                                return (RuntimeResult)method.Invoke(obj, args.ToArray());
+                            });
+                        }
+
+                        foreach (PropertyInfo property in type.GetProperties())
+                        {
+                            if (!property.CanRead)
+                                continue;
+
+                            if (!property.CanWrite)
+                                continue;
+
+                            if (!property.PropertyType.IsSubclassOf(typeof(RuntimeValue)))
+                                continue;
+
+                            obj.Properties[property.Name] = (RuntimeValue)property.GetValue(obj, null);
+                        }
+
+                        foreach (FieldInfo field in type.GetFields())
+                        {
+                            if (!field.IsPublic)
+                                continue;
+
+                            if (!field.FieldType.IsSubclassOf(typeof(RuntimeValue)))
+                                continue;
+
+                            obj.Properties[field.Name] = (RuntimeValue)field.GetValue(obj);
+                        }
+
+                        return new RuntimeResult().Success(obj);
                     }), true);
 
                     continue;
                 }
 
-                MethodInfo[] methods = type.GetMethods();
-                foreach (MethodInfo method in methods)
+                foreach (MethodInfo method in type.GetMethods())
                 {
                     ParameterInfo[] parameters = method.GetParameters();
 
@@ -212,7 +249,7 @@ namespace Stenguage.Ast.Expressions
             }
 
             if (!isStaticImport)
-                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(properties, env.SourceCode, Start, End), true);
+                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(env.SourceCode, Start, End, properties), true);
 
             return res;
         }

@@ -16,7 +16,7 @@ namespace Stenguage.Ast.Expressions
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
             RuntimeResult res = new RuntimeResult();
-            ObjectValue objValue = new ObjectValue(new Dictionary<string, RuntimeValue>(), env.SourceCode, Start, End);
+            ObjectValue objValue = new ObjectValue(env.SourceCode, Start, End);
 
             foreach (Property property in Properties)
             {

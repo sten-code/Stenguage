@@ -26,7 +26,7 @@ namespace Stenguage.Ast.Expressions
                 condition.Type != RuntimeValueType.Number && 
                 condition.Type != RuntimeValueType.Boolean || condition.Type == RuntimeValueType.Number && 
                 ((NumberValue)condition).Value != 0 || condition.Type == RuntimeValueType.Boolean && ((BooleanValue)condition).Value)
-            {       
+            {
                 RuntimeValue result = new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
                 foreach (Expr expr in Body)
                 {

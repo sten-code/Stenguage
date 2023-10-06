@@ -1,4 +1,5 @@
 ﻿using Stenguage;
+using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
 namespace StdLib
@@ -7,10 +8,14 @@ namespace StdLib
     {
         public StringValue TestValue { get; set; }
 
-        public ObjectTest(string sourceCode, Position start, Position end) : base(new Dictionary<string, RuntimeValue>(), sourceCode, start, end)
+        public ObjectTest(string sourceCode, Position start, Position end, StringValue testValue) : base(sourceCode, start, end)
         {
-            TestValue = new StringValue("hello", SourceCode, Start, End);
-            Properties["TestValue"] = TestValue;
+            TestValue = testValue;
+        }
+
+        public RuntimeResult TestFunction()
+        {
+            return new RuntimeResult().Success(TestValue);
         }
 
         public override string ValueString()

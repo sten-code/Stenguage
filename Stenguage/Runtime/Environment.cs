@@ -160,7 +160,7 @@ namespace Stenguage.Runtime
                 }
             }), true);
 
-            env.DeclareVar("time", new ObjectValue(new Dictionary<string, RuntimeValue>
+            env.DeclareVar("time", new ObjectValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0), new Dictionary<string, RuntimeValue>
             {
                 ["epoch"] = new NativeFnValue((args, scope, start, end) =>
                 {
@@ -188,7 +188,7 @@ namespace Stenguage.Runtime
                     Thread.Sleep((int)value);
                     return res.Success(new NullValue(scope.SourceCode, start, end));
                 })
-            }, SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)), true);
+            }), true);
 
             env.DeclareVar("range", new NativeFnValue((args, scope, start, end) =>
             {

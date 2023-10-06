@@ -6,9 +6,9 @@ namespace Stenguage.Runtime.Values
     {
         public Dictionary<string, RuntimeValue> Properties { get; set; }
 
-        public ObjectValue(Dictionary<string, RuntimeValue> properties, string sourceCode, Position start, Position end) : base(RuntimeValueType.Object, sourceCode, start, end)
+        public ObjectValue(string sourceCode, Position start, Position end, Dictionary<string, RuntimeValue> properties = null) : base(RuntimeValueType.Object, sourceCode, start, end)
         {
-            Properties = properties;
+            Properties = properties == null ? new Dictionary<string, RuntimeValue>() : properties;
         }
 
         public override string ValueString()
