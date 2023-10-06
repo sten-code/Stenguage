@@ -89,7 +89,7 @@
         {
             if (Start != null && End != null)
             {
-                return $"[\"{Value}\", {Type}, Line: {Start.Line}, Column: {Start.Column}]";
+                return $"[\"{Value}\", {Type}, Line: {Start.Line}, Column: {Start.Column}, End: {End.Column}]";
             }
             else
             {

@@ -21,55 +21,24 @@ namespace Stenguage.Errors
 
         public override string ToString()
         {
-            // Split the source code into lines
-            var lines = SourceCode.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            StringBuilder errorMessage = new StringBuilder();
 
-            // Create a StringBuilder to build the error message
-            var errorMessage = new StringBuilder();
-
-            // Add the error type and message
             errorMessage.AppendLine($"{ErrorType}: {Message}");
+            errorMessage.AppendLine($"At Line {Start.Line}, Column {Start.Column}:");
 
-            // Add the source code lines with error indicators
-            for (int i = Start.Line - 1; i <= End.Line - 1; i++)
+            string[] sourceLines = SourceCode.Split('\n');
+
+            int longestNum = End.Line.ToString().Length;
+
+            for (int i = Math.Max(Start.Line - 3, 0); i < Start.Line; i++) 
             {
-                var line = lines[i];
-
-                // Add the line number
-                errorMessage.Append($"Line {Start.Line + i}: ");
-
-                // Add the source code line
-                errorMessage.AppendLine(line);
-
-                // Add arrows to indicate the error location
-                if (Start.Line == End.Line)
-                {
-                    // If the error is in a single line
-                    int arrowStart = Start.Column - 1;
-                    int arrowEnd = End.Column - 1;
-
-                    // Add spaces before the arrows
-                    errorMessage.Append(' ', Math.Max(arrowStart, 0));
-
-                    // Add arrows
-                    errorMessage.Append('^', Math.Max(arrowEnd - arrowStart, 1));
-                }
-                else if (i == Start.Line - 1)
-                {
-                    // If the error starts on this line
-                    errorMessage.Append(' ', Math.Max(Start.Column - 1, 0));
-                    errorMessage.AppendLine("^");
-                }
-                else if (i == End.Line - 1)
-                {
-                    // If the error ends on this line
-                    errorMessage.AppendLine("^");
-                }
-                else
-                {
-                    // If the error is in a middle line, just add a caret under the line
-                    errorMessage.AppendLine("^");
-                }
+                errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
+            }
+            errorMessage.AppendLine((Start.Line + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[Start.Line]);
+            errorMessage.AppendLine(new string(' ', longestNum) + " | " + new string(' ', Start.Column) + new string('^', End.Column - Start.Column + 1));
+            for (int i = End.Line + 1; i < Math.Min(End.Line + 5, sourceLines.Length - 1); i++)
+            {
+                errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
             }
 
             return errorMessage.ToString();

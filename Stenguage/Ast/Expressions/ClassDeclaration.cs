@@ -31,7 +31,7 @@ namespace Stenguage.Ast.Expressions
                         return res.Failure(new Error($"u fuckin' idot, you aren't allowed to have a '{expr.Kind}' inside a class declaration.", env.SourceCode, Start, End));
                 }
             }
-            return new RuntimeResult().Success(new ObjectValue(properties, env.SourceCode, Start, End));
+            return new RuntimeResult().Success(new ObjectValue(env.SourceCode, Start, End, properties));
         }
 
         public override RuntimeResult Evaluate(Runtime.Environment env)

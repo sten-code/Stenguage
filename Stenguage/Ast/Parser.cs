@@ -44,6 +44,11 @@ namespace Stenguage.Ast
             Lexer lexer = new Lexer(SourceCode);
             Tokens = lexer.Tokenize();
 
+            //foreach (Token token in Tokens)
+            //{
+            //    Console.WriteLine(token);
+            //}
+
             ParseResult res = new ParseResult();
 
             if (Tokens.Count <= 1)
