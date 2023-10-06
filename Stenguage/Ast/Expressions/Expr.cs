@@ -18,6 +18,7 @@ namespace Stenguage.Ast.Expressions
         Skip,
         WhileLoop,
         Import,
+        ClassDeclaration,
 
         // Expressions
         AssignmentExpr,

@@ -15,6 +15,7 @@
         Break, Continue, // break, continue
         Skip,            // skip
         Import, From,    // import, from
+        Class,           // class
 
         // Operations and Groupings
         OpenParen, CloseParen, // ()
@@ -55,7 +56,8 @@
             ["continue"] = TokenType.Continue,
             ["import"] = TokenType.Import,
             ["from"] = TokenType.From,
-            ["skip"] = TokenType.Skip
+            ["skip"] = TokenType.Skip,
+            ["class"] = TokenType.Class
         };
 
         public static Dictionary<char, TokenType> Symbols = new Dictionary<char, TokenType>
