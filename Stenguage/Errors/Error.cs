@@ -28,11 +28,11 @@ namespace Stenguage.Errors
 
             string[] sourceLines = SourceCode.Split('\n');
 
-            int longestNum = Math.Min(End.Line + 5, sourceLines.Length - 1).ToString().Length;
+            int padding = Math.Min(End.Line + 5, sourceLines.Length - 1).ToString().Length + 2;
 
             for (int i = Math.Max(Start.Line - 3, 0); i < Start.Line; i++) 
             {
-                errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
+                errorMessage.AppendLine((i + 1).ToString().PadLeft(padding) + " | " + sourceLines[i]);
             }
 
             int lineCount = End.Line - Start.Line;
@@ -43,21 +43,21 @@ namespace Stenguage.Errors
                 int longestLine = 0;
                 for (int i = Start.Line; i < End.Line - 1; i++)
                 {
-                    errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
+                    errorMessage.AppendLine("> " + (i + 1).ToString().PadLeft(padding - 2) + " | " + sourceLines[i]);
                     if (sourceLines[i].Length > longestLine)
                         longestLine = sourceLines[i].Length;
                 }
-                errorMessage.AppendLine(new string(' ', longestNum) + " | " + new string('^', longestLine));
+                errorMessage.AppendLine(new string(' ', padding) + " | " + new string('^', longestLine));
             }
             else
             {
-                errorMessage.AppendLine((Start.Line + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[Start.Line]);
-                errorMessage.AppendLine(new string(' ', longestNum) + " | " + new string(' ', Start.Column) + new string('^', End.Column - Start.Column + 1));
+                errorMessage.AppendLine("> " + (Start.Line + 1).ToString().PadLeft(padding - 2) + " | " + sourceLines[Start.Line]);
+                errorMessage.AppendLine(new string(' ', padding) + " | " + new string(' ', Start.Column) + new string('^', Math.Abs(End.Column - Start.Column + 1)));
             }
 
             for (int i = End.Line + 1; i < Math.Min(End.Line + 5, sourceLines.Length - 1); i++)
             {
-                errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
+                errorMessage.AppendLine((i + 1).ToString().PadLeft(padding) + " | " + sourceLines[i]);
             }
 
             return errorMessage.ToString();

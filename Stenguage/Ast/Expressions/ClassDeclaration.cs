@@ -77,6 +77,9 @@ namespace Stenguage.Ast.Expressions
                             return res.Success(value);
                         }), true);
                     }
+                } else if (expr.Kind != NodeType.VarDeclaration)
+                {
+                    return new RuntimeResult().Failure(new Error($"You can't have a '{expr.Kind}' inside a class declaration.", env.SourceCode, Start, End));
                 }
             }
             if (!constructor)
