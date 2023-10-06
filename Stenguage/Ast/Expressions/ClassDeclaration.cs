@@ -18,20 +18,26 @@ namespace Stenguage.Ast.Expressions
         public RuntimeResult GetObject(Runtime.Environment env)
         {
             RuntimeResult res = new RuntimeResult();
-            Dictionary<string, RuntimeValue> properties = new Dictionary<string, RuntimeValue>();
             foreach (Expr expr in Body)
             {
                 switch (expr.Kind)
                 {
                     case NodeType.FunctionDeclaration:
                         FunctionDeclaration fnDecl = (FunctionDeclaration)expr;
-                        properties[fnDecl.Name] = new FunctionValue(fnDecl.Name, fnDecl.Parameters, env, fnDecl.Body, env.SourceCode, Start, End);
+                        FunctionValue fnValue = new FunctionValue(fnDecl.Name, fnDecl.Parameters, env, fnDecl.Body, env.SourceCode, Start, End);
+                        env.DeclareVar(fnDecl.Name, fnValue, true);
+                        break;
+                    case NodeType.VarDeclaration:
+                        VarDeclaration varDecl = (VarDeclaration)expr;
+                        RuntimeValue value = res.Register(varDecl.Value.Evaluate(env));
+                        if (res.ShouldReturn()) return res;
+                        env.DeclareVar(varDecl.Identifier, value, varDecl.Constant);
                         break;
                     default:
-                        return res.Failure(new Error($"u fuckin' idot, you aren't allowed to have a '{expr.Kind}' inside a class declaration.", env.SourceCode, Start, End));
+                        return res.Failure(new Error($"You can't have a '{expr.Kind}' inside a class declaration.", env.SourceCode, Start, End));
                 }
             }
-            return new RuntimeResult().Success(new ObjectValue(env.SourceCode, Start, End, properties));
+            return new RuntimeResult().Success(new ObjectValue(env.SourceCode, Start, End, env.Variables));
         }
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
@@ -59,13 +65,16 @@ namespace Stenguage.Ast.Expressions
                                 newScope.DeclareVar(fnValue.Parameters[i], args[i], false);
                             }
 
+                            RuntimeValue value = res.Register(GetObject(newScope));
+                            if (res.ShouldReturn()) return res;
+
                             foreach (Expr expr in fnValue.Body)
                             {
                                 res.Register(expr.Evaluate(newScope));
                                 if (res.ShouldReturn()) return res;
                             }
 
-                            return GetObject(env);
+                            return res.Success(value);
                         }), true);
                     }
                 }
@@ -74,7 +83,8 @@ namespace Stenguage.Ast.Expressions
             {
                 env.DeclareVar(Name, new NativeFnValue((args, scope, start, end) =>
                 {
-                    return GetObject(env);
+                    Runtime.Environment newScope = new Runtime.Environment(env.SourceCode, env);
+                    return GetObject(newScope);
                 }), true);
             }
             return RuntimeResult.Null(env.SourceCode, Start, End);

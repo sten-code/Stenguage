@@ -311,12 +311,12 @@ namespace Stenguage.Runtime
         {
             Environment env = Resolve(name);
             if (env == null)
-                return new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
+                return null;
 
             if (Constants.Contains(name))
             {
                 Console.WriteLine($"Error: Cannot reassign a constant '{name}'");
-                return new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
+                return null;
             }
 
             env.Variables[name] = value;

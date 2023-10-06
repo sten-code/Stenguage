@@ -28,14 +28,33 @@ namespace Stenguage.Errors
 
             string[] sourceLines = SourceCode.Split('\n');
 
-            int longestNum = End.Line.ToString().Length;
+            int longestNum = Math.Min(End.Line + 5, sourceLines.Length - 1).ToString().Length;
 
             for (int i = Math.Max(Start.Line - 3, 0); i < Start.Line; i++) 
             {
                 errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
             }
-            errorMessage.AppendLine((Start.Line + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[Start.Line]);
-            errorMessage.AppendLine(new string(' ', longestNum) + " | " + new string(' ', Start.Column) + new string('^', End.Column - Start.Column + 1));
+
+            int lineCount = End.Line - Start.Line;
+
+            if (lineCount > 0)
+            {
+                // this is an error error with more than 1 line
+                int longestLine = 0;
+                for (int i = Start.Line; i < End.Line - 1; i++)
+                {
+                    errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);
+                    if (sourceLines[i].Length > longestLine)
+                        longestLine = sourceLines[i].Length;
+                }
+                errorMessage.AppendLine(new string(' ', longestNum) + " | " + new string('^', longestLine));
+            }
+            else
+            {
+                errorMessage.AppendLine((Start.Line + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[Start.Line]);
+                errorMessage.AppendLine(new string(' ', longestNum) + " | " + new string(' ', Start.Column) + new string('^', End.Column - Start.Column + 1));
+            }
+
             for (int i = End.Line + 1; i < Math.Min(End.Line + 5, sourceLines.Length - 1); i++)
             {
                 errorMessage.AppendLine((i + 1).ToString().PadLeft(longestNum) + " | " + sourceLines[i]);

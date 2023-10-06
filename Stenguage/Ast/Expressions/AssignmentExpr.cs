@@ -23,8 +23,12 @@ namespace Stenguage.Ast.Expressions
 
             if (Assigne.Kind == NodeType.Identifier)
             {
-                return res.Success(env.AssignVar(((Identifier)Assigne).Symbol, value));
-            }   
+                string name = ((Identifier)Assigne).Symbol;
+                RuntimeValue newValue = env.AssignVar(name, value);
+                if (newValue == null)
+                    return res.Failure(new Error($"Couldn't assign '{name}', it either doesn't exist or it's a constant.", env.SourceCode, Start, End));
+                return res.Success(newValue);
+            }
             else if (Assigne.Kind == NodeType.MemberExpr)
             {
                 MemberExpr memberExpr = (MemberExpr)Assigne;

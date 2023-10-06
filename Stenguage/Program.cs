@@ -51,10 +51,6 @@ namespace Stenguage
                 {
                     Console.WriteLine(result.Error);
                 }
-                else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
-                {
-                    LogResult(result.Value);
-                }
                 return;
             }
 
