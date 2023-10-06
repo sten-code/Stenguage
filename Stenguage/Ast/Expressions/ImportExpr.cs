@@ -1,7 +1,6 @@
 ﻿using Stenguage.Errors;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
-using System;
 using System.Reflection;
 
 namespace Stenguage.Ast.Expressions

@@ -1,5 +1,6 @@
 ﻿using Stenguage.Ast.Expressions;
 using Stenguage.Errors;
+using System.Xml.Linq;
 
 namespace Stenguage.Ast
 {
@@ -99,12 +100,45 @@ namespace Stenguage.Ast
                 case TokenType.From:
                     expr = res.Register(ParseFromExpr());
                     break;
+                case TokenType.Class:
+                    expr = res.Register(ParseClassExpr());
+                    break;
                 default:
                     expr = res.Register(ParseExpr());
                     break;
             }
             if (res.ShouldReturn()) return res;
             return res.Success(expr);
+        }
+
+        private ParseResult ParseClassExpr()
+        {
+            ParseResult res = new ParseResult();
+
+            res.Register(Expect(TokenType.Class));
+            if (res.ShouldReturn()) return res;
+            Position start = At().Start.Copy();
+
+            Token identifier = At();
+            res.Register(Expect(TokenType.Identifier));
+            if (res.ShouldReturn()) return res;
+
+            res.Register(Expect(TokenType.OpenBrace));
+            if (res.ShouldReturn()) return res;
+
+            ClassDeclaration classDecl = new ClassDeclaration(identifier.Value, new List<Expr>(), start, null);
+            while (At().Type != TokenType.CloseBrace && At().Type != TokenType.EOF)
+            {
+                Expr expr = res.Register(ParseStmt());
+                if (res.ShouldReturn()) return res;
+                classDecl.Body.Add(expr);
+            }
+
+            res.Register(Expect(TokenType.CloseBrace));
+            if (res.ShouldReturn()) return res;
+            classDecl.End = At().End.Copy();
+
+            return res.Success(classDecl);
         }
 
         private ParseResult ParseImportExpr()
