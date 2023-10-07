@@ -55,9 +55,9 @@ namespace Stenguage.Runtime
 
         public void Setup(Environment env)
         {
-            env.DeclareVar("true", new BooleanValue(true, SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)), true);
-            env.DeclareVar("false", new BooleanValue(false, SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)), true);
-            env.DeclareVar("null", new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)), true);
+            env.DeclareVar("true", new BooleanValue(true, SourceCode), true);
+            env.DeclareVar("false", new BooleanValue(false, SourceCode), true);
+            env.DeclareVar("null", new NullValue(SourceCode), true);
 
             env.DeclareVar("print", new NativeFnValue((args, scope, start, end) =>
             {
@@ -66,7 +66,7 @@ namespace Stenguage.Runtime
                     Console.Write(arg.ToString() + " ");
                 }
                 Console.WriteLine();
-                return RuntimeResult.Null(scope.SourceCode, start, end);
+                return RuntimeResult.Null(scope.SourceCode);
             }), true);
 
             env.DeclareVar("input", new NativeFnValue((args, scope, start, end) =>
@@ -82,9 +82,9 @@ namespace Stenguage.Runtime
 
                 string input = Console.ReadLine();
                 if (input == null)
-                    return res.Success(new NullValue(SourceCode, start, end));
+                    return res.Success(new NullValue(SourceCode));
 
-                return res.Success(new StringValue(input, SourceCode, start, end));
+                return res.Success(new StringValue(input, SourceCode));
             }), true);
 
             env.DeclareVar("int", new NativeFnValue((args, scope, start, end) =>
@@ -103,9 +103,9 @@ namespace Stenguage.Runtime
                 switch (type)
                 {
                     case 0:
-                        return res.Success(new NumberValue((int)((NumberValue)args[0]).Value, scope.SourceCode, start, end));
+                        return res.Success(new NumberValue((int)((NumberValue)args[0]).Value, scope.SourceCode));
                     case 1:
-                        return res.Success(new NumberValue(((BooleanValue)args[0]).Value ? 1 : 0, SourceCode, start, end));
+                        return res.Success(new NumberValue(((BooleanValue)args[0]).Value ? 1 : 0, scope.SourceCode));
                     case 2:
                         StringValue str = (StringValue)args[0];
                         if (!int.TryParse(str.Value, out int value))
@@ -113,7 +113,7 @@ namespace Stenguage.Runtime
                             return res.Failure(new Error($"Cannot convert '{str.Value}' to an integer.", scope.SourceCode, start, end));
                         }
 
-                        return res.Success(new NumberValue(value, scope.SourceCode, start, end));
+                        return res.Success(new NumberValue(value, scope.SourceCode));
                     case 3:
                         str = (StringValue)args[0];
                         NumberValue b = (NumberValue)args[1];
@@ -124,7 +124,7 @@ namespace Stenguage.Runtime
 
                         try
                         {
-                            return res.Success(new NumberValue(Convert.ToInt16(str.Value, (int)b.Value), scope.SourceCode, start, end));
+                            return res.Success(new NumberValue(Convert.ToInt16(str.Value, (int)b.Value), scope.SourceCode));
                         } 
                         catch (FormatException)
                         {
@@ -154,20 +154,20 @@ namespace Stenguage.Runtime
                             return res.Failure(new Error($"Cannot convert '{str.Value}' to a double.", scope.SourceCode, start, end));
                         }
 
-                        return res.Success(new NumberValue(value, scope.SourceCode, start, end));
+                        return res.Success(new NumberValue(value, scope.SourceCode));
                     default:
                         return res.Failure(new Error($"Cannot convert '{args[0].Type}' to a double.", scope.SourceCode, start, end));
                 }
             }), true);
 
-            env.DeclareVar("time", new ObjectValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0), new Dictionary<string, RuntimeValue>
+            env.DeclareVar("time", new ObjectValue(SourceCode, new Dictionary<string, RuntimeValue>
             {
                 ["epoch"] = new NativeFnValue((args, scope, start, end) =>
                 {
                     RuntimeResult res = new RuntimeResult();
                     if (CheckArguments(args) == -1)
                         return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
-                    return res.Success(new NumberValue(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), scope.SourceCode, start, end));
+                    return res.Success(new NumberValue(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), scope.SourceCode));
                 }),
                 ["sleep"] = new NativeFnValue((args, scope, start, end) =>
                 {
@@ -186,7 +186,7 @@ namespace Stenguage.Runtime
                     }
 
                     Thread.Sleep((int)value);
-                    return res.Success(new NullValue(scope.SourceCode, start, end));
+                    return res.Success(new NullValue(scope.SourceCode));
                 })
             }), true);
 
@@ -227,10 +227,10 @@ namespace Stenguage.Runtime
                 List<RuntimeValue> result = new List<RuntimeValue>();
                 for (int i = s; i < e; i += step)
                 {
-                    result.Add(new NumberValue(i, SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
+                    result.Add(new NumberValue(i, SourceCode));
                 }
 
-                return res.Success(new ListValue(result, SourceCode, start, end));
+                return res.Success(new ListValue(result, SourceCode));
             }), true);
 
             env.DeclareVar("len", new NativeFnValue((args, scope, start, end) =>
@@ -247,11 +247,11 @@ namespace Stenguage.Runtime
                 switch (type)
                 {
                     case 0:
-                        return res.Success(new NumberValue(((StringValue)args[0]).Value.Length, SourceCode, start, end));
+                        return res.Success(new NumberValue(((StringValue)args[0]).Value.Length, SourceCode));
                     case 1:
-                        return res.Success(new NumberValue(((ListValue)args[0]).Items.Count, SourceCode, start, end));
+                        return res.Success(new NumberValue(((ListValue)args[0]).Items.Count, SourceCode));
                     default:
-                        return res.Success(new NullValue(SourceCode, start, end));
+                        return res.Success(new NullValue(SourceCode));
                 }
             }), true);
 
@@ -268,9 +268,9 @@ namespace Stenguage.Runtime
                 switch (type)
                 {
                     case 0:
-                        return res.Success(new StringValue(args[0].Type.ToString(), SourceCode, start, end));
+                        return res.Success(new StringValue(args[0].Type.ToString(), SourceCode));
                     default:
-                        return res.Success(new NullValue(SourceCode, start, end));
+                        return res.Success(new NullValue(SourceCode));
                 }
             }), true);
         }

@@ -9,7 +9,7 @@ namespace Stenguage.Runtime.Values
         public Environment Environment { get; set; }
         public List<Expr> Body { get; set; }
 
-        public FunctionValue(string name, List<string> parameters, Environment env, List<Expr> body, string sourceCode, Position start, Position end) : base(RuntimeValueType.Function, sourceCode, start, end)
+        public FunctionValue(string name, List<string> parameters, Environment env, List<Expr> body, string sourceCode) : base(RuntimeValueType.Function, sourceCode)
         {
             Name = name;
             Parameters = parameters;

@@ -15,7 +15,7 @@ namespace Stenguage.Ast.Expressions
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
             RuntimeResult res = new RuntimeResult();
-            RuntimeValue last = new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
+            RuntimeValue last = new NullValue(env.SourceCode);
             foreach (Expr expr in Body)
             {
                 last = res.Register(expr.Evaluate(env));

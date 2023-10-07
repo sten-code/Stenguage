@@ -1,5 +1,4 @@
 ﻿using Stenguage.Errors;
-using Stenguage.Json;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
@@ -29,7 +28,7 @@ namespace Stenguage.Ast.Expressions
             if (res.ShouldReturn()) return res;
 
             if (iterator.Count == 0)
-                return res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
+                return RuntimeResult.Null(env.SourceCode);
 
             int skipCount = 0;
             foreach (RuntimeValue item in iterator)
@@ -71,7 +70,7 @@ namespace Stenguage.Ast.Expressions
                 }
             }
 
-            return res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
+            return RuntimeResult.Null(env.SourceCode);
         }
     }
 

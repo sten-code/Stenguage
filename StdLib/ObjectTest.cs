@@ -1,5 +1,4 @@
-﻿using Stenguage;
-using Stenguage.Runtime;
+﻿using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
 namespace StdLib
@@ -8,7 +7,7 @@ namespace StdLib
     {
         public StringValue TestValue { get; set; }
 
-        public ObjectTest(string sourceCode, Position start, Position end, StringValue testValue) : base(sourceCode, start, end)
+        public ObjectTest(string sourceCode, StringValue testValue) : base(sourceCode)
         {
             TestValue = testValue;
         }

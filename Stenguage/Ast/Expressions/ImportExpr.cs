@@ -79,7 +79,7 @@ namespace Stenguage.Ast.Expressions
             }
             else
             {
-                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(code, new Position(0, 0, 0), new Position(0, 0, 0), localEnv.Variables), true);
+                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(code, localEnv.Variables), true);
             }
             return result;
         }
@@ -114,7 +114,7 @@ namespace Stenguage.Ast.Expressions
                     // Declare a constructor
                     env.DeclareVar(type.Name, new NativeFnValue((args, scope, start, end) =>
                     {
-                        ObjectValue obj = (ObjectValue)Activator.CreateInstance(type, new object[] { scope.SourceCode, start, end }.Concat(args).ToArray());
+                        ObjectValue obj = (ObjectValue)Activator.CreateInstance(type, new object[] { scope.SourceCode }.Concat(args).ToArray());
 
                         foreach (MethodInfo method in type.GetMethods())
                         {
@@ -249,7 +249,7 @@ namespace Stenguage.Ast.Expressions
             }
 
             if (!isStaticImport)
-                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(env.SourceCode, Start, End, properties), true);
+                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(env.SourceCode, properties), true);
 
             return res;
         }
@@ -281,7 +281,7 @@ namespace Stenguage.Ast.Expressions
                 if (res.ShouldReturn()) return (res, false);
             }
 
-            return (res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0))), true);
+            return (RuntimeResult.Null(env.SourceCode), true);
         }
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
@@ -303,7 +303,7 @@ namespace Stenguage.Ast.Expressions
             if (!found)
                 return res.Failure(new Error($"Couldn't find the file to import", env.SourceCode, Start, End));
 
-            return res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
+            return RuntimeResult.Null(env.SourceCode);
         }
     }
 

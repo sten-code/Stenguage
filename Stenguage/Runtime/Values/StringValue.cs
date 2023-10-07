@@ -6,7 +6,7 @@ namespace Stenguage.Runtime.Values
     {
         public string Value { get; set; }
 
-        public StringValue(string value, string sourceCode, Position start, Position end) : base(RuntimeValueType.String, sourceCode, start, end)
+        public StringValue(string value, string sourceCode) : base(RuntimeValueType.String, sourceCode)
         {
             Value = value;
         }
@@ -25,15 +25,15 @@ namespace Stenguage.Runtime.Values
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.String)
-                return res.Success(new BooleanValue(false, SourceCode, start, end));
-            return res.Success(new BooleanValue(Value == ((StringValue)right).Value, SourceCode, start, end));
+                return res.Success(new BooleanValue(false, SourceCode));
+            return res.Success(new BooleanValue(Value == ((StringValue)right).Value, SourceCode));
         }
         public override RuntimeResult CompareNE(RuntimeValue right, Position start, Position end)
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.String)
-                return res.Success(new BooleanValue(true, SourceCode, start, end));
-            return res.Success(new BooleanValue(Value != ((StringValue)right).Value, SourceCode, start, end));
+                return res.Success(new BooleanValue(true, SourceCode));
+            return res.Success(new BooleanValue(Value != ((StringValue)right).Value, SourceCode));
         }
 
         public override RuntimeResult Add(RuntimeValue right, Position start, Position end)
@@ -43,13 +43,13 @@ namespace Stenguage.Runtime.Values
             {
                 case RuntimeValueType.Number:
                     NumberValue numberValue = (NumberValue)right;
-                    return res.Success(new StringValue(Value + numberValue.Value, SourceCode, start, end));
+                    return res.Success(new StringValue(Value + numberValue.Value, SourceCode));
                 case RuntimeValueType.String:
                     StringValue stringValue = (StringValue)right;
-                    return res.Success(new StringValue(Value + stringValue.Value, SourceCode, start, end));
+                    return res.Success(new StringValue(Value + stringValue.Value, SourceCode));
                 case RuntimeValueType.Boolean:
                     BooleanValue booleanValue = (BooleanValue)right;
-                    return res.Success(new StringValue(Value + booleanValue.Value.ToString(), SourceCode, start, end));
+                    return res.Success(new StringValue(Value + booleanValue.Value.ToString(), SourceCode));
                 default:
                     return new RuntimeResult().Failure(new OperationError("+", Type, right.Type, SourceCode, start, end));
             }
@@ -66,10 +66,10 @@ namespace Stenguage.Runtime.Values
                         return new RuntimeResult().Failure(new Error("Can only multiply a string by an integer.", SourceCode, start, end));
                     }
 
-                    return res.Success(new StringValue(string.Concat(Enumerable.Repeat(Value, (int)numberValue.Value)), SourceCode, start, end));
+                    return res.Success(new StringValue(string.Concat(Enumerable.Repeat(Value, (int)numberValue.Value)), SourceCode));
                 case RuntimeValueType.Boolean:
                     BooleanValue booleanValue = (BooleanValue)right;
-                    return res.Success(new StringValue(string.Concat(Enumerable.Repeat(Value, booleanValue.Value ? 1 : 0)), SourceCode, start, end));
+                    return res.Success(new StringValue(string.Concat(Enumerable.Repeat(Value, booleanValue.Value ? 1 : 0)), SourceCode));
                 default:
                     return new RuntimeResult().Failure(new OperationError("*", Type, right.Type, SourceCode, start, end));
             }
@@ -77,7 +77,7 @@ namespace Stenguage.Runtime.Values
 
         public override RuntimeResult Not(Position start, Position end)
         {
-            return new RuntimeResult().Success(new BooleanValue(Value.Length == 0, SourceCode, start, end));
+            return new RuntimeResult().Success(new BooleanValue(Value.Length == 0, SourceCode));
         }
 
         public override RuntimeResult GetIndex(RuntimeValue index, Position start, Position end)
@@ -99,7 +99,7 @@ namespace Stenguage.Runtime.Values
                 return res.Failure(new Error("Index out of bounds.", SourceCode, start, end));
             }
 
-            return res.Success(new StringValue(Value[(int)num.Value].ToString(), SourceCode, start, end));
+            return res.Success(new StringValue(Value[(int)num.Value].ToString(), SourceCode));
         }
 
         public override (RuntimeResult, List<RuntimeValue>) Iterate(Position start, Position end)
@@ -107,9 +107,9 @@ namespace Stenguage.Runtime.Values
             List<RuntimeValue> list = new List<RuntimeValue>();
             foreach (char c in Value)
             {
-                list.Add(new StringValue(c.ToString(), SourceCode, start, end));
+                list.Add(new StringValue(c.ToString(), SourceCode));
             }
-            return (new RuntimeResult().Success(new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0))), list);
+            return (RuntimeResult.Null(SourceCode), list);
         }
     }
 }

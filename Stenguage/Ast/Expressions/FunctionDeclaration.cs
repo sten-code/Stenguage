@@ -1,4 +1,5 @@
-﻿using Stenguage.Runtime;
+﻿using Stenguage.Errors;
+using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
 namespace Stenguage.Ast.Expressions
@@ -18,7 +19,10 @@ namespace Stenguage.Ast.Expressions
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
-            return new RuntimeResult().Success(env.DeclareVar(Name, new FunctionValue(Name, Parameters, env, Body, env.SourceCode, Start, End), true));
+            RuntimeValue value = env.DeclareVar(Name, new FunctionValue(Name, Parameters, env, Body, env.SourceCode), true);
+            if (value == null)
+                return new RuntimeResult().Failure(new Error("Variable already exists", env.SourceCode, Start, End));
+            return new RuntimeResult().Success(value);
         }
     }
 

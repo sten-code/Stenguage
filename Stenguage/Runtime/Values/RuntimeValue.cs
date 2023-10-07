@@ -19,15 +19,10 @@ namespace Stenguage.Runtime.Values
     {
         public RuntimeValueType Type { get; set; }
         public string SourceCode { get; set; }
-        public Position Start { get; set; }
-        public Position End { get; set; }
 
-        public RuntimeValue(RuntimeValueType type, string sourceCode, Position start, Position end)
+        public RuntimeValue(RuntimeValueType type, string sourceCode)
         {
             Type = type;
-            SourceCode = sourceCode;
-            Start = start;
-            End = end;
         }
 
         public abstract string ValueString();
@@ -35,11 +30,11 @@ namespace Stenguage.Runtime.Values
         // Compare Operations
         public virtual RuntimeResult CompareEE(RuntimeValue right, Position start, Position end)
         {
-            return new RuntimeResult().Success(new BooleanValue(this == right, SourceCode, start, end));
+            return new RuntimeResult().Success(new BooleanValue(this == right, SourceCode));
         }
         public virtual RuntimeResult CompareNE(RuntimeValue right, Position start, Position end)
         {
-            return new RuntimeResult().Success(new BooleanValue(this != right, SourceCode, start, end));
+            return new RuntimeResult().Success(new BooleanValue(this != right, SourceCode));
         }
         public virtual RuntimeResult CompareLT(RuntimeValue right, Position start, Position end)
         {
@@ -95,7 +90,7 @@ namespace Stenguage.Runtime.Values
         // Unary Operations
         public virtual RuntimeResult Not(Position start, Position end)
         {
-            return new RuntimeResult().Success(new BooleanValue(false, SourceCode, start, end));
+            return new RuntimeResult().Success(new BooleanValue(false, SourceCode));
         }
         public virtual RuntimeResult Min(Position start, Position end)
         {

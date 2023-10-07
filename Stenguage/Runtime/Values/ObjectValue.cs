@@ -6,7 +6,7 @@ namespace Stenguage.Runtime.Values
     {
         public Dictionary<string, RuntimeValue> Properties { get; set; }
 
-        public ObjectValue(string sourceCode, Position start, Position end, Dictionary<string, RuntimeValue> properties = null) : base(RuntimeValueType.Object, sourceCode, start, end)
+        public ObjectValue(string sourceCode, Dictionary<string, RuntimeValue> properties = null) : base(RuntimeValueType.Object, sourceCode)
         {
             Properties = properties == null ? new Dictionary<string, RuntimeValue>() : properties;
         }
@@ -62,11 +62,11 @@ namespace Stenguage.Runtime.Values
             {
                 values.Add(new ListValue(new List<RuntimeValue>
                 {
-                    new StringValue(prop.Key, SourceCode, start, end),
+                    new StringValue(prop.Key, SourceCode),
                     prop.Value
-                }, SourceCode, start, end));
+                }, SourceCode));
             }
-            return (new RuntimeResult().Success(new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0))), values);
+            return (RuntimeResult.Null(SourceCode), values);
         }
 
     }

@@ -56,7 +56,7 @@ namespace Stenguage.Ast.Expressions
                     }
                     if (res.ShouldReturn()) return res;
                 }
-                return res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
+                return RuntimeResult.Null(env.SourceCode);
             }
 
             return res.Failure(new Error("Cannot call a value that is not a function.", env.SourceCode, Start, End));

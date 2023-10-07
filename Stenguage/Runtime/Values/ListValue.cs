@@ -8,7 +8,7 @@ namespace Stenguage.Runtime.Values
     {
         public List<RuntimeValue> Items { get; set; }
 
-        public ListValue(List<RuntimeValue> items, string sourceCode, Position start, Position end) : base(RuntimeValueType.List, sourceCode, start, end)
+        public ListValue(List<RuntimeValue> items, string sourceCode) : base(RuntimeValueType.List, sourceCode)
         {
             Items = items;
         }
@@ -32,7 +32,7 @@ namespace Stenguage.Runtime.Values
 
         public override RuntimeResult Add(RuntimeValue right, Position start, Position end)
         {
-            return new RuntimeResult().Success(new ListValue(new List<RuntimeValue>(Items) { right }, SourceCode, start, end));
+            return new RuntimeResult().Success(new ListValue(new List<RuntimeValue>(Items) { right }, SourceCode));
         }
         public override RuntimeResult Sub(RuntimeValue right, Position start, Position end)
         {
@@ -43,7 +43,7 @@ namespace Stenguage.Runtime.Values
 
             List<RuntimeValue> newList = new List<RuntimeValue>(Items);
             newList.RemoveAt((int)((NumberValue)right).Value);
-            return new RuntimeResult().Success(new ListValue(newList, SourceCode, start, end));
+            return new RuntimeResult().Success(new ListValue(newList, SourceCode));
         }
         public override RuntimeResult Mul(RuntimeValue right, Position start, Position end)
         {
@@ -57,12 +57,12 @@ namespace Stenguage.Runtime.Values
             {
                 values.AddRange(Items.Copy());
             }
-            return new RuntimeResult().Success(new ListValue(values, SourceCode, start, end));
+            return new RuntimeResult().Success(new ListValue(values, SourceCode));
         }
 
         public override RuntimeResult Not(Position start, Position end)
         {
-            return new RuntimeResult().Success(new BooleanValue(Items.Count == 0, SourceCode, start, end));
+            return new RuntimeResult().Success(new BooleanValue(Items.Count == 0, SourceCode));
         }
 
         public override RuntimeResult GetIndex(RuntimeValue index, Position start, Position end)
@@ -109,7 +109,7 @@ namespace Stenguage.Runtime.Values
 
         public override (RuntimeResult, List<RuntimeValue>) Iterate(Position start, Position end)
         {
-            return (new RuntimeResult().Success(new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0))), Items);
+            return (RuntimeResult.Null(SourceCode), Items);
         }
     }
 }

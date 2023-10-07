@@ -4,7 +4,7 @@
     {
         public Func<List<RuntimeValue>, Environment, Position, Position, RuntimeResult> Call { get; set; }
 
-        public NativeFnValue(Func<List<RuntimeValue>, Environment, Position, Position, RuntimeResult> call) : base(RuntimeValueType.NativeFn, "", new Position(0, 0, 0), new Position(0, 0, 0))
+        public NativeFnValue(Func<List<RuntimeValue>, Environment, Position, Position, RuntimeResult> call) : base(RuntimeValueType.NativeFn, "")
         {
             Call = call;
         }

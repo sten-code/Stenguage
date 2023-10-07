@@ -30,7 +30,7 @@ namespace Stenguage.Ast.Expressions
             }
             else
             {
-                index = new StringValue(((Identifier)Property).Symbol, env.SourceCode, Start, End);
+                index = new StringValue(((Identifier)Property).Symbol, env.SourceCode);
             }
 
             RuntimeValue result = res.Register(val.GetIndex(index, Start, End));

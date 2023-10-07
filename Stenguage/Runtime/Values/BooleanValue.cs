@@ -6,7 +6,7 @@ namespace Stenguage.Runtime.Values
     {
         public bool Value { get; set; }
 
-        public BooleanValue(bool value, string sourceCode, Position start, Position end) : base(RuntimeValueType.Boolean, sourceCode, start, end)
+        public BooleanValue(bool value, string sourceCode) : base(RuntimeValueType.Boolean, sourceCode)
         {
             Value = value;
         }
@@ -25,51 +25,51 @@ namespace Stenguage.Runtime.Values
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.Boolean)
-                return res.Success(new BooleanValue(false, SourceCode, start, end));
-            return res.Success(new BooleanValue(Value == ((BooleanValue)right).Value, SourceCode, start, end));
+                return res.Success(new BooleanValue(false, SourceCode));
+            return res.Success(new BooleanValue(Value == ((BooleanValue)right).Value, SourceCode));
         }
         public override RuntimeResult CompareNE(RuntimeValue right, Position start, Position end)
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.Boolean)
-                return res.Success(new BooleanValue(true, SourceCode, start, end));
-            return res.Success(new BooleanValue(Value != ((BooleanValue)right).Value, SourceCode, start, end));
+                return res.Success(new BooleanValue(true, SourceCode));
+            return res.Success(new BooleanValue(Value != ((BooleanValue)right).Value, SourceCode));
         }
         public override RuntimeResult CompareLT(RuntimeValue right, Position start, Position end)
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.Boolean)
-                return res.Success(new BooleanValue(false, SourceCode, start, end));
-            return res.Success(new BooleanValue(!Value && ((BooleanValue)right).Value, SourceCode, start, end));
+                return res.Success(new BooleanValue(false, SourceCode));
+            return res.Success(new BooleanValue(!Value && ((BooleanValue)right).Value, SourceCode));
         }
         public override RuntimeResult CompareLTE(RuntimeValue right, Position start, Position end)
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.Boolean)
-                return res.Success(new BooleanValue(false, SourceCode, start, end));
-            return res.Success(new BooleanValue(!(Value && !((BooleanValue)right).Value), SourceCode, start, end));
+                return res.Success(new BooleanValue(false, SourceCode));
+            return res.Success(new BooleanValue(!(Value && !((BooleanValue)right).Value), SourceCode));
         }
         public override RuntimeResult CompareGT(RuntimeValue right, Position start, Position end)
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.Boolean)
-                return res.Success(new BooleanValue(false, SourceCode, start, end));
-            return res.Success(new BooleanValue(Value && !((BooleanValue)right).Value, SourceCode, start, end));
+                return res.Success(new BooleanValue(false, SourceCode));
+            return res.Success(new BooleanValue(Value && !((BooleanValue)right).Value, SourceCode));
         }
         public override RuntimeResult CompareGTE(RuntimeValue right, Position start, Position end)
         {
             RuntimeResult res = new RuntimeResult();
             if (right.Type != RuntimeValueType.Boolean)
-                return res.Success(new BooleanValue(false, SourceCode, start, end));
-            return res.Success(new BooleanValue(!(!Value && ((BooleanValue)right).Value), SourceCode, start, end));
+                return res.Success(new BooleanValue(false, SourceCode));
+            return res.Success(new BooleanValue(!(!Value && ((BooleanValue)right).Value), SourceCode));
         }
         public override RuntimeResult And(RuntimeValue right, Position start, Position end)
         {
-            return new RuntimeResult().Success(right.Type == RuntimeValueType.Boolean ? new BooleanValue(Value && ((BooleanValue)right).Value, SourceCode, start, end) : right);
+            return new RuntimeResult().Success(right.Type == RuntimeValueType.Boolean ? new BooleanValue(Value && ((BooleanValue)right).Value, SourceCode) : right);
         }
         public override RuntimeResult Or(RuntimeValue right, Position start, Position end)
         {
-            return new RuntimeResult().Success(right.Type == RuntimeValueType.Boolean ? new BooleanValue(Value || ((BooleanValue)right).Value, SourceCode, start, end) : this);
+            return new RuntimeResult().Success(right.Type == RuntimeValueType.Boolean ? new BooleanValue(Value || ((BooleanValue)right).Value, SourceCode) : this);
         }
 
         public override RuntimeResult Add(RuntimeValue right, Position start, Position end)
@@ -78,13 +78,13 @@ namespace Stenguage.Runtime.Values
             switch (right.Type)
             {
                 case RuntimeValueType.Number:
-                    return res.Success(new NumberValue((Value ? 1 : 0) + ((NumberValue)right).Value, SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) + ((NumberValue)right).Value, SourceCode));
                 case RuntimeValueType.Boolean:
                     BooleanValue booleanValue = (BooleanValue)right;
-                    return res.Success(new NumberValue((Value ? 1 : 0) + (booleanValue.Value ? 1 : 0), SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) + (booleanValue.Value ? 1 : 0), SourceCode));
                 case RuntimeValueType.String:
                     StringValue stringValue = (StringValue)right;
-                    return res.Success(new StringValue(Value.ToString() + stringValue.Value, SourceCode, start, end));
+                    return res.Success(new StringValue(Value.ToString() + stringValue.Value, SourceCode));
                 default:
                     return new RuntimeResult().Failure(new OperationError("+", Type, right.Type, SourceCode, start, end));
             }
@@ -95,9 +95,9 @@ namespace Stenguage.Runtime.Values
             switch (right.Type)
             {
                 case RuntimeValueType.Number:
-                    return res.Success(new NumberValue((Value ? 1 : 0) - ((NumberValue)right).Value, SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) - ((NumberValue)right).Value, SourceCode));
                 case RuntimeValueType.Boolean:
-                    return res.Success(new NumberValue((Value ? 1 : 0) - (((BooleanValue)right).Value ? 1 : 0), SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) - (((BooleanValue)right).Value ? 1 : 0), SourceCode));
                 default:
                     return new RuntimeResult().Failure(new OperationError("-", Type, right.Type, SourceCode, start, end));
             }
@@ -108,9 +108,9 @@ namespace Stenguage.Runtime.Values
             switch (right.Type)
             {
                 case RuntimeValueType.Number:
-                    return res.Success(new NumberValue((Value ? 1 : 0) * ((NumberValue)right).Value, SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) * ((NumberValue)right).Value, SourceCode));
                 case RuntimeValueType.Boolean:
-                    return res.Success(new NumberValue((Value ? 1 : 0) * (((BooleanValue)right).Value ? 1 : 0), SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) * (((BooleanValue)right).Value ? 1 : 0), SourceCode));
                 default:
                     return new RuntimeResult().Failure(new OperationError("*", Type, right.Type, SourceCode, start, end));
             }
@@ -121,9 +121,9 @@ namespace Stenguage.Runtime.Values
             switch (right.Type)
             {
                 case RuntimeValueType.Number:
-                    return res.Success(new NumberValue((Value ? 1 : 0) / ((NumberValue)right).Value, SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) / ((NumberValue)right).Value, SourceCode));
                 case RuntimeValueType.Boolean:
-                    return res.Success(new NumberValue((Value ? 1 : 0) / (((BooleanValue)right).Value ? 1 : 0), SourceCode, start, end));
+                    return res.Success(new NumberValue((Value ? 1 : 0) / (((BooleanValue)right).Value ? 1 : 0), SourceCode));
                 default:
                     return new RuntimeResult().Failure(new OperationError("/", Type, right.Type, SourceCode, start, end));
             }
@@ -131,11 +131,11 @@ namespace Stenguage.Runtime.Values
 
         public override RuntimeResult Not(Position start, Position end)
         {
-            return new RuntimeResult().Success(new BooleanValue(!Value, SourceCode, start, end));
+            return new RuntimeResult().Success(new BooleanValue(!Value, SourceCode));
         }
         public override RuntimeResult Min(Position start, Position end)
         {
-            return new RuntimeResult().Success(new NumberValue(Value ? -1 : 0, SourceCode, start, end));
+            return new RuntimeResult().Success(new NumberValue(Value ? -1 : 0, SourceCode));
         }
     }
 }

@@ -73,7 +73,7 @@ namespace Stenguage.Ast.Expressions
                 condition = (BooleanValue)conditionValue;
             }
 
-            return res.Success(new NullValue(env.SourceCode, new Position(0, 0, 0), new Position(0, 0, 0)));
+            return RuntimeResult.Null(env.SourceCode);
         }
     }
 
