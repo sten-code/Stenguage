@@ -5,7 +5,9 @@ VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stenguage", "Stenguage\Stenguage.csproj", "{C65DA33F-1355-45FD-B7BF-85C2D286628B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StdLib", "StdLib\StdLib.csproj", "{9EDFA9C9-DAB0-47E4-AA24-A226E7A0BC6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StdLib", "StdLib\StdLib.csproj", "{9EDFA9C9-DAB0-47E4-AA24-A226E7A0BC6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stenguage.Tests", "Stenguage.Tests\Stenguage.Tests.csproj", "{61737262-1776-4C2C-8931-96828B71BABA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{9EDFA9C9-DAB0-47E4-AA24-A226E7A0BC6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EDFA9C9-DAB0-47E4-AA24-A226E7A0BC6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EDFA9C9-DAB0-47E4-AA24-A226E7A0BC6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61737262-1776-4C2C-8931-96828B71BABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61737262-1776-4C2C-8931-96828B71BABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61737262-1776-4C2C-8931-96828B71BABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61737262-1776-4C2C-8931-96828B71BABA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
