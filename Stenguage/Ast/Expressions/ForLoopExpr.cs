@@ -1,4 +1,5 @@
-﻿using Stenguage.Json;
+﻿using Stenguage.Errors;
+using Stenguage.Json;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
@@ -39,7 +40,8 @@ namespace Stenguage.Ast.Expressions
                     continue;
                 }
                 Runtime.Environment scope = new Runtime.Environment(env.SourceCode, env);
-                scope.DeclareVar(ItemName, item, true);
+                if (scope.DeclareVar(ItemName, item, true) == null)
+                    return res.Failure(new Error("Variable already exists", env.SourceCode, Start, End));
                 foreach (Expr expr in Body)
                 {
                     RuntimeValue result = res.Register(expr.Evaluate(scope));

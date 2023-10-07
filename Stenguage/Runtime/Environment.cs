@@ -296,10 +296,7 @@ namespace Stenguage.Runtime
         public RuntimeValue DeclareVar(string name, RuntimeValue value, bool isConstant)
         {
             if (Variables.ContainsKey(name))
-            {
-                Console.WriteLine($"Error: Cannot declare an existing variable, {name}.");
-                return new NullValue(SourceCode, new Position(0, 0, 0), new Position(0, 0, 0));
-            }
+                return null;
 
             Variables[name] = value;
             if (isConstant)

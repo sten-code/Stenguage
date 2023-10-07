@@ -41,7 +41,8 @@ namespace Stenguage.Ast.Expressions
                 Runtime.Environment scope = new Runtime.Environment(env.SourceCode, fnValue.Environment);
                 for (int i = 0; i < fnValue.Parameters.Count; i++)
                 {
-                    scope.DeclareVar(fnValue.Parameters[i], args[i], false);
+                    if (scope.DeclareVar(fnValue.Parameters[i], args[i], false) == null)
+                        return res.Failure(new Error("Variable already exists", env.SourceCode, Start, End));
                 }
 
                 foreach (Expr expr in fnValue.Body)
