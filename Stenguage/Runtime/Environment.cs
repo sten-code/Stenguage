@@ -202,30 +202,30 @@ namespace Stenguage.Runtime
                 if (type == -1)
                     return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
 
-                int s = 0;
-                int e = 0;
-                int step = 1;
+                double s = 0;
+                double e = 0;
+                double step = 1;
 
                 switch (type)
                 {
                     case 0:
-                        e = (int)((NumberValue)args[0]).Value;
+                        e = ((NumberValue)args[0]).Value;
                         break;
                     case 1:
-                        s = (int)((NumberValue)args[0]).Value;
-                        e = (int)((NumberValue)args[1]).Value;
+                        s = ((NumberValue)args[0]).Value;
+                        e = ((NumberValue)args[1]).Value;
                         break;
                     case 2:
-                        s = (int)((NumberValue)args[0]).Value;
-                        e = (int)((NumberValue)args[1]).Value;
-                        step = (int)((NumberValue)args[2]).Value;
+                        s = ((NumberValue)args[0]).Value;
+                        e = ((NumberValue)args[1]).Value;
+                        step = ((NumberValue)args[2]).Value;
                         break;
                     default:
                         break;
                 }
 
                 List<RuntimeValue> result = new List<RuntimeValue>();
-                for (int i = s; i < e; i += step)
+                for (double i = s; i < e; i += step)
                 {
                     result.Add(new NumberValue(i, SourceCode));
                 }

@@ -1,6 +1,5 @@
-using Stenguage.Ast;
-using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
+using static Stenguage.Tests.Test;
 
 namespace Stenguage.Tests
 {
@@ -10,61 +9,36 @@ namespace Stenguage.Tests
         [TestMethod]
         public void ConstantString()
         {
-            string code = @"const testvar = ""Hello, World!""";
-            ParseResult parseResult = new Parser(code).ProduceAST();
-            Assert.IsFalse(parseResult.ShouldReturn());
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            Assert.IsNull(result.Error);
-            Assert.IsTrue(result.Value.Type == RuntimeValueType.String);
-            Assert.IsTrue(((StringValue)result.Value).Value == "Hello, World!");
+            StringValue value = (StringValue)TestCode(@"const testvar = ""Hello, World!""", false, RuntimeValueType.String, null);
+            Assert.IsTrue(value.Value == "Hello, World!");
         }
 
         [TestMethod]
         public void ConstantInteger()
         {
-            string code = @"const testvar = 69420";
-            ParseResult parseResult = new Parser(code).ProduceAST();
-            Assert.IsFalse(parseResult.ShouldReturn());
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            Assert.IsNull(result.Error);
-            Assert.IsTrue(result.Value.Type == RuntimeValueType.Number);
-            Assert.IsTrue(((NumberValue)result.Value).Value == 69420);
+            NumberValue value = (NumberValue)TestCode(@"const testvar = 69420", false, RuntimeValueType.Number, null);
+            Assert.IsTrue(value.Value == 69420);
         }
 
         [TestMethod]
         public void ConstantDouble()
         {
-            string code = @"const testvar = 69.420";
-            ParseResult parseResult = new Parser(code).ProduceAST();
-            Assert.IsFalse(parseResult.ShouldReturn());
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            Assert.IsNull(result.Error);
-            Assert.IsTrue(result.Value.Type == RuntimeValueType.Number);
-            Assert.IsTrue(((NumberValue)result.Value).Value == 69.42);
+            NumberValue value = (NumberValue)TestCode(@"const testvar = 69.420", false, RuntimeValueType.Number, null);
+            Assert.IsTrue(value.Value == 69.42);
         }
 
         [TestMethod]
         public void ConstantBooleanTrue()
         {
-            string code = @"const testvar = true";
-            ParseResult parseResult = new Parser(code).ProduceAST();
-            Assert.IsFalse(parseResult.ShouldReturn());
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            Assert.IsNull(result.Error);
-            Assert.IsTrue(result.Value.Type == RuntimeValueType.Boolean);
-            Assert.IsTrue(((BooleanValue)result.Value).Value);
+            BooleanValue value = (BooleanValue)TestCode(@"const testvar = true", false, RuntimeValueType.Boolean, null);
+            Assert.IsTrue(value.Value);
         }
 
         [TestMethod]
         public void ConstantBooleanFalse()
         {
-            string code = @"const testvar = false";
-            ParseResult parseResult = new Parser(code).ProduceAST();
-            Assert.IsFalse(parseResult.ShouldReturn());
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
-            Assert.IsNull(result.Error);
-            Assert.IsTrue(result.Value.Type == RuntimeValueType.Boolean);
-            Assert.IsFalse(((BooleanValue)result.Value).Value);
+            BooleanValue value = (BooleanValue)TestCode(@"const testvar = false", false, RuntimeValueType.Boolean, null);
+            Assert.IsFalse(value.Value);
         }
     }
 }
