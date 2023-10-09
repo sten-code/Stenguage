@@ -23,6 +23,7 @@ namespace Stenguage.Runtime.Values
         public RuntimeValue(RuntimeValueType type, string sourceCode)
         {
             Type = type;
+            SourceCode = sourceCode;
         }
 
         public abstract string ValueString();

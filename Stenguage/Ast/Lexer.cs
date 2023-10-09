@@ -212,7 +212,7 @@ namespace Stenguage.Ast
                 NextChar();
             }
 
-            tokens.Add(new Token("EOF", TokenType.EOF, new Position(0, 0, 0), new Position(0, 0, 0)));
+            tokens.Add(new Token("EOF", TokenType.EOF, tokens.Last().End.Copy(), tokens.Last().End.Copy()));
             return tokens;
         }
 

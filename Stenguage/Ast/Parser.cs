@@ -33,6 +33,7 @@ namespace Stenguage.Ast
             Token token = At();
             if (token.Type != type)
             {
+                Console.WriteLine(token);
                 return new ParseResult().Failure(new Error($"Expected '{type}', got '{token.Type}'.", SourceCode, token.Start, token.End));
             }
             Tokens.RemoveAt(0);
@@ -137,6 +138,7 @@ namespace Stenguage.Ast
                 Expr expr = res.Register(ParseStmt());
                 if (res.ShouldReturn()) return res;
                 classDecl.Body.Add(expr);
+
             }
 
             res.Register(Expect(TokenType.CloseBrace));
