@@ -69,6 +69,32 @@ namespace Stenguage.Runtime
                 return RuntimeResult.Null(scope.SourceCode);
             }), true);
 
+            env.DeclareVar("exit", new NativeFnValue((args, scope, start, end) =>
+            {
+                RuntimeResult res = new RuntimeResult();
+                int type = CheckArguments(args, new List<List<RuntimeValueType>>
+                {
+                    new List<RuntimeValueType> {  },
+                    new List<RuntimeValueType> { RuntimeValueType.Number }
+                });
+                if (type == -1)
+                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+
+                switch (type)
+                {
+                    case 0:
+                        System.Environment.Exit(0);
+                        return RuntimeResult.Null(scope.SourceCode);
+                    case 1:
+                        System.Environment.Exit((int)((NumberValue)args[0]).Value);
+                        return RuntimeResult.Null(scope.SourceCode);
+                    default:
+                        return res.Failure(new Error($"Cannot convert '{args[0].Type}' to a double.", scope.SourceCode, start, end));
+                }
+
+                return RuntimeResult.Null(scope.SourceCode);
+            }), true);
+
             env.DeclareVar("input", new NativeFnValue((args, scope, start, end) =>
             {
                 RuntimeResult res = new RuntimeResult();

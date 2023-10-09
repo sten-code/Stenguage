@@ -21,9 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Stenguage\Stenguage.csproj">
-      <Private>False</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\Stenguage\Stenguage.csproj" />
   </ItemGroup>
 
 </Project>
