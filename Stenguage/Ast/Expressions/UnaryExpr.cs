@@ -20,12 +20,13 @@ namespace Stenguage.Ast.Expressions
             RuntimeResult res = new RuntimeResult();
             RuntimeValue value = res.Register(Expr.Evaluate(env));
             if (res.ShouldReturn()) return res;
+            Context ctx = new Context(Start, End, env);
             switch (Operator)
             {
                 case "-":
-                    return value.Min(Start, End);
+                    return value.Min(ctx);
                 case "!":
-                    return value.Not(Start, End);
+                    return value.Not(ctx);
                 default:
                     return res.Failure(new Error($"'{Operator}' isn't a valid unary operator.", env.SourceCode, Start, End));
             }

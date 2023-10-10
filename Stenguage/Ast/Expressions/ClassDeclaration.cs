@@ -24,7 +24,7 @@ namespace Stenguage.Ast.Expressions
                 {
                     case NodeType.FunctionDeclaration:
                         FunctionDeclaration fnDecl = (FunctionDeclaration)expr;
-                        FunctionValue fnValue = new FunctionValue(fnDecl.Name, fnDecl.Parameters, env, fnDecl.Body, env.SourceCode);
+                        FunctionValue fnValue = new FunctionValue(fnDecl.Name, fnDecl.Parameters, env, fnDecl.Body);
                         if (env.DeclareVar(fnDecl.Name, fnValue, true) == null)
                             return res.Failure(new Error("Variable already exists", env.SourceCode, fnDecl.Start, fnDecl.End));
                         break;
@@ -39,7 +39,7 @@ namespace Stenguage.Ast.Expressions
                         return res.Failure(new Error($"You can't have a '{expr.Kind}' inside a class declaration.", env.SourceCode, Start, End));
                 }
             }
-            return new RuntimeResult().Success(new ObjectValue(env.SourceCode, env.Variables));
+            return new RuntimeResult().Success(new ObjectValue(env.Variables));
         }
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
@@ -54,19 +54,19 @@ namespace Stenguage.Ast.Expressions
                     {
                         // This means that its a constructor function
                         constructor = true;
-                        FunctionValue fnValue = new FunctionValue(fnDecl.Name, fnDecl.Parameters, env, fnDecl.Body, env.SourceCode);
-                        if (env.DeclareVar(Name, new NativeFnValue((args, scope, start, end) =>
+                        FunctionValue fnValue = new FunctionValue(fnDecl.Name, fnDecl.Parameters, env, fnDecl.Body);
+                        if (env.DeclareVar(Name, new NativeFnValue((args, ctx) =>
                         {
                             RuntimeResult res = new RuntimeResult();
                             if (args.Count != fnValue.Parameters.Count)
-                                return res.Failure(new Error($"Invalid parameter count, expected {fnValue.Parameters.Count}, got {args.Count}.", scope.SourceCode, start, end));
+                                return res.Failure(new Error($"Invalid parameter count, expected {fnValue.Parameters.Count}, got {args.Count}.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                             Runtime.Environment newScope = new Runtime.Environment(env.SourceCode, env);
                             Runtime.Environment fnScope = new Runtime.Environment(newScope.SourceCode, newScope);
                             for (int i = 0; i < fnValue.Parameters.Count; i++)
                             {
                                 if (fnScope.DeclareVar(fnValue.Parameters[i], args[i], false) == null)
-                                    return res.Failure(new Error("Variable already exists", scope.SourceCode, start, end));
+                                    return res.Failure(new Error("Variable already exists", ctx.Env.SourceCode, ctx.Start, ctx.End));
                             }
 
                             RuntimeValue value = res.Register(GetObject(newScope));
@@ -89,14 +89,14 @@ namespace Stenguage.Ast.Expressions
             }
             if (!constructor)
             {
-                if (env.DeclareVar(Name, new NativeFnValue((args, scope, start, end) =>
+                if (env.DeclareVar(Name, new NativeFnValue((args, ctx) =>
                 {
                     Runtime.Environment newScope = new Runtime.Environment(env.SourceCode, env);
                     return GetObject(newScope);
                 }), true) == null)
                     return new RuntimeResult().Failure(new Error("Variable already exists", env.SourceCode, Start, End));
             }
-            return RuntimeResult.Null(env.SourceCode);
+            return RuntimeResult.Null();
         }
 
     }

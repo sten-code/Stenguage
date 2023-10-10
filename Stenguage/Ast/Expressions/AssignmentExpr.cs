@@ -48,7 +48,7 @@ namespace Stenguage.Ast.Expressions
                     if (res.ShouldReturn()) return res;
                 }
 
-                RuntimeValue result = res.Register(val.SetIndex(index, value, memberExpr.Start, memberExpr.End));
+                RuntimeValue result = res.Register(val.SetIndex(index, value, new Context(memberExpr.Start, memberExpr.End, env)));
                 if (res.ShouldReturn()) return res;
 
                 return res.Success(result);

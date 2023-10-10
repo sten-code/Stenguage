@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Stenguage.Runtime;
+using System.Text;
 
 namespace Stenguage.Errors
 {

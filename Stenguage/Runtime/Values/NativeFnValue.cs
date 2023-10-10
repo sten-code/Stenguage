@@ -1,12 +1,12 @@
 ﻿namespace Stenguage.Runtime.Values
 {
-    public class NativeFnValue : RuntimeValue
+    public class NativeFnValue : FunctionBase
     {
-        public Func<List<RuntimeValue>, Environment, Position, Position, RuntimeResult> Call { get; set; }
+        public Func<List<RuntimeValue>, Context, RuntimeResult> Func { get; set; }
 
-        public NativeFnValue(Func<List<RuntimeValue>, Environment, Position, Position, RuntimeResult> call) : base(RuntimeValueType.NativeFn, "")
+        public NativeFnValue(Func<List<RuntimeValue>, Context, RuntimeResult> func)
         {
-            Call = call;
+            Func = func;
         }
 
         public override string ValueString()
@@ -17,6 +17,11 @@
         public override string ToString()
         {
             return "NativeFn";
+        }
+
+        public override RuntimeResult Call(List<RuntimeValue> args, Context ctx)
+        {
+            return Func(args, ctx);
         }
     }
 }

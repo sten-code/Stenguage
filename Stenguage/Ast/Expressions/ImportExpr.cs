@@ -18,7 +18,7 @@ namespace Stenguage.Ast.Expressions
             Names = names;
         }
 
-        public RuntimeResult ImportFile(string file, Runtime.Environment env)
+        public RuntimeResult ImportFile(string file, Context ctx)
         {
             RuntimeResult res = new RuntimeResult();
             if (!File.Exists(file))
@@ -28,11 +28,11 @@ namespace Stenguage.Ast.Expressions
             switch (ext)
             {
                 case ".dll":
-                    res.Register(ImportDLLFile(file, env, IsStaticImport, Names));
+                    res.Register(ImportDLLFile(file, ctx, IsStaticImport, Names));
                     if (res.ShouldReturn()) return res;
                     break;
                 case ".sten":
-                    res.Register(ImportStenFile(file, env, IsStaticImport, Names));
+                    res.Register(ImportStenFile(file, ctx, IsStaticImport, Names));
                     if (res.ShouldReturn()) return res;
                     break;
             }
@@ -40,22 +40,22 @@ namespace Stenguage.Ast.Expressions
             return res;
         }
 
-        public RuntimeResult ImportStenFile(string file, Runtime.Environment env, bool isStaticImport, List<string> names)
+        public RuntimeResult ImportStenFile(string file, Context ctx, bool isStaticImport, List<string> names)
         {
             RuntimeResult res = new RuntimeResult();
             if (!File.Exists(file))
-                return res.Failure(new Error($"Couldn't find file '{file}'", env.SourceCode, Start, End));
+                return res.Failure(new Error($"Couldn't find file '{file}'", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
             if (names.Count > 0)
                 isStaticImport = true;
 
             string code = File.ReadAllText(file);
-            ParseResult r = new Parser(code).ProduceAST();
-            if (r.Error != null) return res.Failure(r.Error);
-            if (r.Expr == null) return res;
+            ParseResult script = new Parser(code).ProduceAST();
+            if (script.Error != null) return res.Failure(script.Error);
+            if (script.Expr == null) return res;
 
             Runtime.Environment localEnv = new Runtime.Environment(code);
-            RuntimeResult result = r.Expr.Evaluate(localEnv);
+            RuntimeResult result = script.Expr.Evaluate(localEnv);
             if (isStaticImport)
             {
                 if (names.Count > 0)
@@ -63,31 +63,30 @@ namespace Stenguage.Ast.Expressions
                     foreach (string name in names)
                     {
                         if (localEnv.Variables.ContainsKey(name))
-                            env.DeclareVar(name, localEnv.Variables[name], true);
+                            ctx.Env.DeclareVar(name, localEnv.Variables[name], true);
                         else
-                            return res.Failure(new Error($"The name '{name}' doesn't exist in '{file}'.", env.SourceCode, Start, End));
+                            return res.Failure(new Error($"The name '{name}' doesn't exist in '{file}'.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                     }
                 } else
                 {
                     foreach (KeyValuePair<string, RuntimeValue> variable in localEnv.Variables)
                     {
                         // Only import it if its currently undefined
-                        if (env.LookupVar(variable.Key) == null)
-                            env.DeclareVar(variable.Key, variable.Value, true);
+                        if (ctx.Env.LookupVar(variable.Key) == null)
+                            ctx.Env.DeclareVar(variable.Key, variable.Value, true);
                     }
                 }
             }
             else
             {
-                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(code, localEnv.Variables), true);
+                ctx.Env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(localEnv.Variables), true);
             }
             return result;
         }
 
-        public RuntimeResult ImportDLLFile(string file, Runtime.Environment env, bool isStaticImport, List<string> names)
+        public RuntimeResult ImportDLLFile(string file, Context ctx, bool isStaticImport, List<string> names)
         {
             RuntimeResult res = new RuntimeResult();
-
             if (names.Count > 0)
                 isStaticImport = true;
 
@@ -98,11 +97,11 @@ namespace Stenguage.Ast.Expressions
             } 
             catch (FileLoadException)
             {
-                return res.Failure(new Error("File load error", env.SourceCode, Start, End));
+                return res.Failure(new Error("File load error", ctx.Env.SourceCode, ctx.Start, ctx.End));
             }
             catch (BadImageFormatException)
             {
-                return res.Failure(new Error("Bad DLL image", env.SourceCode, Start, End));
+                return res.Failure(new Error("Bad DLL image", ctx.Env.SourceCode, ctx.Start, ctx.End));
             }
 
             Dictionary<string, RuntimeValue> properties = new Dictionary<string, RuntimeValue>();
@@ -112,49 +111,10 @@ namespace Stenguage.Ast.Expressions
                 if (type.IsSubclassOf(typeof(ObjectValue)))
                 {
                     // Declare a constructor
-                    env.DeclareVar(type.Name, new NativeFnValue((args, scope, start, end) =>
+                    ctx.Env.DeclareVar(type.Name, new NativeFnValue((args, ctx) =>
                     {
-                        ObjectValue obj = (ObjectValue)Activator.CreateInstance(type, new object[] { scope.SourceCode }.Concat(args).ToArray());
-
-                        foreach (MethodInfo method in type.GetMethods())
-                        {
-                            if (!method.IsPublic)
-                                continue;
-
-                            if (method.ReturnType != typeof(RuntimeResult))
-                                continue;
-
-                            obj.Properties[method.Name] = new NativeFnValue((args, scope, start, end) =>
-                            {
-                                return (RuntimeResult)method.Invoke(obj, args.ToArray());
-                            });
-                        }
-
-                        foreach (PropertyInfo property in type.GetProperties())
-                        {
-                            if (!property.CanRead)
-                                continue;
-
-                            if (!property.CanWrite)
-                                continue;
-
-                            if (!property.PropertyType.IsSubclassOf(typeof(RuntimeValue)))
-                                continue;
-
-                            obj.Properties[property.Name] = (RuntimeValue)property.GetValue(obj, null);
-                        }
-
-                        foreach (FieldInfo field in type.GetFields())
-                        {
-                            if (!field.IsPublic)
-                                continue;
-
-                            if (!field.FieldType.IsSubclassOf(typeof(RuntimeValue)))
-                                continue;
-
-                            obj.Properties[field.Name] = (RuntimeValue)field.GetValue(obj);
-                        }
-
+                        ObjectValue obj = (ObjectValue)Activator.CreateInstance(type, args.ToArray());
+                        obj.Init();
                         return new RuntimeResult().Success(obj);
                     }), true);
 
@@ -184,7 +144,7 @@ namespace Stenguage.Ast.Expressions
                     RuntimeValue value;
                     if (isStaticImport)
                     {
-                        value = env.LookupVar(method.Name);
+                        value = ctx.Env.LookupVar(method.Name);
                         isDefined = value != null;
                     }
                     else
@@ -196,52 +156,52 @@ namespace Stenguage.Ast.Expressions
                     if (isDefined)
                     {
                         // Reassign the value to automatically check which type it corrosponds to
-                        NativeFnValue newFn = new NativeFnValue((args, scope, start, end) =>
+                        NativeFnValue newFn = new NativeFnValue((args, ctx) =>
                         {
                             RuntimeResult res = new RuntimeResult();
-                            if (args.Count != parameters.Length - 3)
+                            if (args.Count != parameters.Length - 1)
                             {
                                 // Its not this method so just call the other method;
-                                return ((NativeFnValue)value).Call(args, scope, start, end);
+                                return ((NativeFnValue)value).Call(args, ctx);
                             }
 
                             for (int i = 0; i < args.Count; i++)
                             {
-                                Type expected = parameters[i + 3].ParameterType;
+                                Type expected = parameters[i + 1].ParameterType;
                                 Type got = args[i].GetType();
                                 if (expected != got && expected != typeof(RuntimeValue))
-                                    return ((NativeFnValue)value).Call(args, scope, start, end);
+                                    return ((NativeFnValue)value).Call(args, ctx);
                             }
 
-                            return (RuntimeResult)method.Invoke(null, new object[] { scope, start, end }.Concat(args).ToArray());
+                            return (RuntimeResult)method.Invoke(null, args.ToArray());
                         });
 
                         if (isStaticImport)
-                            env.AssignVar(method.Name, newFn);
+                            ctx.Env.AssignVar(method.Name, newFn);
                         else
                             properties[method.Name] = newFn;
                     }
                     else
                     {
-                        NativeFnValue fn = new NativeFnValue((args, scope, start, end) =>
+                        NativeFnValue fn = new NativeFnValue((args, ctx) =>
                         {
                             RuntimeResult res = new RuntimeResult();
-                            if (args.Count != parameters.Length - 3)
-                                return res.Failure(new Error($"Invalid parameter count, expected {parameters.Length}, got {args.Count}.", scope.SourceCode, start, end));
+                            if (args.Count != parameters.Length - 1)
+                                return res.Failure(new Error($"Invalid parameter count, expected {parameters.Length}, got {args.Count}.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                             for (int i = 0; i < args.Count; i++)
                             {
-                                Type expected = parameters[i + 3].ParameterType;
+                                Type expected = parameters[i + 1].ParameterType;
                                 Type got = args[i].GetType();
                                 if (expected != got)
-                                    return res.Failure(new Error($"Invalid parameter type, expected a '{expected.Name}' type, got '{got.Name}'.", scope.SourceCode, start, end));
+                                    return res.Failure(new Error($"Invalid parameter type, expected a '{expected.Name}' type, got '{got.Name}'.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                             }
 
-                            return (RuntimeResult)method.Invoke(null, new object[] { scope, start, end }.Concat(args).ToArray());
+                            return (RuntimeResult)method.Invoke(null, new object[] { ctx }.Concat(args).ToArray());
                         });
 
                         if (isStaticImport)
-                            env.DeclareVar(method.Name, fn, false);
+                            ctx.Env.DeclareVar(method.Name, fn, false);
                         else
                             properties[method.Name] = fn;
                     }
@@ -249,12 +209,12 @@ namespace Stenguage.Ast.Expressions
             }
 
             if (!isStaticImport)
-                env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(env.SourceCode, properties), true);
+                ctx.Env.DeclareVar(Path.GetFileNameWithoutExtension(file), new ObjectValue(properties), true);
 
             return res;
         }
 
-        public (RuntimeResult, bool) ImportFromOrigin(string origin, Runtime.Environment env)
+        public (RuntimeResult, bool) ImportFromOrigin(string origin, Context ctx)
         {
             RuntimeResult res = new RuntimeResult();
 
@@ -267,7 +227,7 @@ namespace Stenguage.Ast.Expressions
 
                 foreach (string filename in Directory.GetFiles(path).Where(x => new string[] { ".sten", ".dll" }.Contains(Path.GetExtension(x))))
                 {
-                    res.Register(ImportFile(filename, env));
+                    res.Register(ImportFile(filename, ctx));
                     if (res.ShouldReturn()) return (res, false);
                 }
             }
@@ -275,27 +235,28 @@ namespace Stenguage.Ast.Expressions
             {
                 if (!File.Exists(path + ".sten") && !File.Exists(path + ".dll"))
                     return (res, false);
-                res.Register(ImportFile(path + ".sten", env));
+                res.Register(ImportFile(path + ".sten", ctx));
                 if (res.ShouldReturn()) return (res, false);
-                res.Register(ImportFile(path + ".dll", env));
+                res.Register(ImportFile(path + ".dll", ctx));
                 if (res.ShouldReturn()) return (res, false);
             }
 
-            return (RuntimeResult.Null(env.SourceCode), true);
+            return (RuntimeResult.Null(), true);
         }
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
+            Context ctx = new Context(Start, End, env);
             RuntimeResult res = new RuntimeResult();
             bool found = false;
 
-            (RuntimeResult r, bool success) = ImportFromOrigin(Directory.GetCurrentDirectory(), env);
+            (RuntimeResult r, bool success) = ImportFromOrigin(Directory.GetCurrentDirectory(), ctx);
             res.Register(r);
             if (res.ShouldReturn()) return res;
             if (success) found = true;
 
             string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "libs");
-            (r, success) = ImportFromOrigin(path, env);
+            (r, success) = ImportFromOrigin(path, ctx);
             res.Register(r);
             if (res.ShouldReturn()) return res;
             if (success) found = true;
@@ -303,7 +264,7 @@ namespace Stenguage.Ast.Expressions
             if (!found)
                 return res.Failure(new Error($"Couldn't find the file to import", env.SourceCode, Start, End));
 
-            return RuntimeResult.Null(env.SourceCode);
+            return RuntimeResult.Null();
         }
     }
 

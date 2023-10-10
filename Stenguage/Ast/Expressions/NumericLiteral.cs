@@ -14,7 +14,7 @@ namespace Stenguage.Ast.Expressions
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
-            return new RuntimeResult().Success(new NumberValue(Value, env.SourceCode));
+            return new RuntimeResult().Success(new NumberValue(Value));
         }
     }
 

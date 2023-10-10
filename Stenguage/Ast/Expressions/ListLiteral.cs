@@ -22,7 +22,7 @@ namespace Stenguage.Ast.Expressions
                 if (res.ShouldReturn()) return res;
                 list.Add(value);
             }
-            return res.Success(new ListValue(list, env.SourceCode));
+            return res.Success(new ListValue(list));
         }
     }
 

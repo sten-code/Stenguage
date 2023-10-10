@@ -12,9 +12,9 @@ namespace Stenguage.Runtime
         public RuntimeValue ReturnValue { get; set; }
         public NumberValue SkipValue { get; set; }
 
-        public static RuntimeResult Null(string sourceCode = "")
+        public static RuntimeResult Null()
         {
-            return new RuntimeResult().Success(new NullValue(sourceCode));
+            return new RuntimeResult().Success(new NullValue());
         }
 
         public RuntimeResult()

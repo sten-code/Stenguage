@@ -23,12 +23,12 @@ namespace Stenguage.Ast.Expressions
             RuntimeValue iteratorValue = res.Register(Iterator.Evaluate(env));
             if (res.ShouldReturn()) return res;
 
-            (RuntimeResult r, List<RuntimeValue> iterator) = iteratorValue.Iterate(Iterator.Start, Iterator.End);
+            (RuntimeResult r, List<RuntimeValue> iterator) = iteratorValue.Iterate(new Context(Iterator.Start, Iterator.End, env));
             res.Register(r);
             if (res.ShouldReturn()) return res;
 
             if (iterator.Count == 0)
-                return RuntimeResult.Null(env.SourceCode);
+                return RuntimeResult.Null();
 
             int skipCount = 0;
             foreach (RuntimeValue item in iterator)
@@ -70,7 +70,7 @@ namespace Stenguage.Ast.Expressions
                 }
             }
 
-            return RuntimeResult.Null(env.SourceCode);
+            return RuntimeResult.Null();
         }
     }
 

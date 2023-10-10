@@ -2,8 +2,8 @@
 {
     public class NullValue : RuntimeValue
     {
-        public NullValue(string sourceCode)
-            : base(RuntimeValueType.Null, sourceCode)
+        public NullValue()
+            : base(RuntimeValueType.Null)
         { }
 
         public override string ValueString()
@@ -16,13 +16,13 @@
             return "null";
         }
 
-        public override RuntimeResult CompareEE(RuntimeValue right, Position start, Position end)
+        public override RuntimeResult CompareEE(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Success(new BooleanValue(right.Type == RuntimeValueType.Null, SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(right.Type == RuntimeValueType.Null));
         }
-        public override RuntimeResult CompareNE(RuntimeValue right, Position start, Position end)
+        public override RuntimeResult CompareNE(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Success(new BooleanValue(right.Type != RuntimeValueType.Null, SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(right.Type != RuntimeValueType.Null));
         }
     }
 }

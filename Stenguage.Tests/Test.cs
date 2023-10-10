@@ -10,13 +10,14 @@ namespace Stenguage.Tests
         public static RuntimeValue TestCode(string code, bool shouldReturn, RuntimeValueType returnType, Error expectedError)
         {
             // Generate AST
+            Runtime.Environment env = new Runtime.Environment(code);
             ParseResult parseResult = new Parser(code).ProduceAST();
 
             // Did an error occur during parsing (syntax error)
             Assert.IsTrue(parseResult.ShouldReturn() == shouldReturn);
 
             // Run the code
-            RuntimeResult result = parseResult.Expr.Evaluate(new Runtime.Environment(code));
+            RuntimeResult result = parseResult.Expr.Evaluate(env);
 
             // Should the code have resulted in an error?
             if (expectedError != null)

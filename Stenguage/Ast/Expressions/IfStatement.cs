@@ -27,7 +27,7 @@ namespace Stenguage.Ast.Expressions
                 condition.Type != RuntimeValueType.Boolean || condition.Type == RuntimeValueType.Number && 
                 ((NumberValue)condition).Value != 0 || condition.Type == RuntimeValueType.Boolean && ((BooleanValue)condition).Value)
             {
-                RuntimeValue result = new NullValue(env.SourceCode);
+                RuntimeValue result = new NullValue();
                 foreach (Expr expr in Body)
                 {
                     result = res.Register(expr.Evaluate(env));
@@ -37,7 +37,7 @@ namespace Stenguage.Ast.Expressions
             }
             else
             {
-                RuntimeValue result = new NullValue(env.SourceCode);
+                RuntimeValue result = new NullValue();
                 foreach (Expr expr in ElseBody)
                 {
                     result = res.Register(expr.Evaluate(env));

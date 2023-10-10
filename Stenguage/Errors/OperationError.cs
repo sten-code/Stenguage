@@ -1,4 +1,6 @@
-﻿namespace Stenguage.Errors
+﻿using Stenguage.Runtime;
+
+namespace Stenguage.Errors
 {
     public class OperationError : Error
     {

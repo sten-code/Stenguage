@@ -1,8 +1,6 @@
 ﻿using Stenguage.Ast;
-using Stenguage.Json;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
-using System.Reflection;
 
 namespace Stenguage
 {
@@ -12,14 +10,10 @@ namespace Stenguage
         {
             switch (result.Type)
             {
-                case Runtime.Values.RuntimeValueType.NativeFn:
-                    Console.WriteLine("Native Function");
+                case RuntimeValueType.Function:
+                    Console.WriteLine($"<Function>");
                     break;
-                case Runtime.Values.RuntimeValueType.Function:
-                    FunctionValue fn = (FunctionValue)result;
-                    Console.WriteLine($"Function: {fn.Name}");
-                    break;
-                case Runtime.Values.RuntimeValueType.Object:
+                case RuntimeValueType.Object:
                     ObjectValue obj = (ObjectValue)result;
                     foreach (KeyValuePair<string, RuntimeValue> val in obj.Properties)
                     {

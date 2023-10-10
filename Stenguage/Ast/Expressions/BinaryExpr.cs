@@ -25,39 +25,41 @@ namespace Stenguage.Ast.Expressions
             RuntimeValue right = res.Register(Right.Evaluate(env));
             if (res.ShouldReturn()) return res;
 
+            Context ctx = new Context(Start, End, env);
+
             switch (Operator)
             {
                 // Arithmetic
                 case "+":
-                    return left.Add(right, Start, End);
+                    return left.Add(right, ctx);
                 case "-":
-                    return left.Sub(right, Start, End);
+                    return left.Sub(right, ctx);
                 case "*":
-                    return left.Mul(right, Start, End);
+                    return left.Mul(right, ctx);
                 case "/":
-                    return left.Div(right, Start, End);
+                    return left.Div(right, ctx);
                 case "%":
-                    return left.Mod(right, Start, End);
+                    return left.Mod(right, ctx);
                 case "^":
-                    return left.Pow(right, Start, End);
+                    return left.Pow(right, ctx);
 
                 // Comparisons
                 case "==":
-                    return left.CompareEE(right, Start, End);
+                    return left.CompareEE(right, ctx);
                 case "!=":
-                    return left.CompareNE(right, Start, End);
+                    return left.CompareNE(right, ctx);
                 case "<":
-                    return left.CompareLT(right, Start, End);
+                    return left.CompareLT(right, ctx);
                 case "<=":
-                    return left.CompareLTE(right, Start, End);
+                    return left.CompareLTE(right, ctx);
                 case ">":
-                    return left.CompareGT(right, Start, End);
+                    return left.CompareGT(right, ctx);
                 case ">=":
-                    return left.CompareGTE(right, Start, End);
+                    return left.CompareGTE(right, ctx);
                 case "&&":
-                    return left.And(right, Start, End);
+                    return left.And(right, ctx);
                 case "||":
-                    return left.Or(right, Start, End);
+                    return left.Or(right, ctx);
                 default:
                     return res.Failure(new Error($"Unknown operator '{Operator}'", env.SourceCode, Start, End));
             }

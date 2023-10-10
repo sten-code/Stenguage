@@ -55,21 +55,20 @@ namespace Stenguage.Runtime
 
         public void Setup(Environment env)
         {
-            env.DeclareVar("true", new BooleanValue(true, SourceCode), true);
-            env.DeclareVar("false", new BooleanValue(false, SourceCode), true);
-            env.DeclareVar("null", new NullValue(SourceCode), true);
+            env.DeclareVar("true", new BooleanValue(true), true);
+            env.DeclareVar("false", new BooleanValue(false), true);
+            env.DeclareVar("null", new NullValue(), true);
 
-            env.DeclareVar("print", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("print", new NativeFnValue((args, ctx) =>
             {
                 foreach (RuntimeValue arg in args)
-                {
                     Console.Write(arg.ToString() + " ");
-                }
+
                 Console.WriteLine();
-                return RuntimeResult.Null(scope.SourceCode);
+                return RuntimeResult.Null();
             }), true);
 
-            env.DeclareVar("exit", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("exit", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -78,24 +77,23 @@ namespace Stenguage.Runtime
                     new List<RuntimeValueType> { RuntimeValueType.Number }
                 });
                 if (type == -1)
-                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                    return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                 switch (type)
                 {
                     case 0:
                         System.Environment.Exit(0);
-                        return RuntimeResult.Null(scope.SourceCode);
+                        return RuntimeResult.Null();
                     case 1:
                         System.Environment.Exit((int)((NumberValue)args[0]).Value);
-                        return RuntimeResult.Null(scope.SourceCode);
+                        return RuntimeResult.Null();
                     default:
-                        return res.Failure(new Error($"Cannot convert '{args[0].Type}' to a double.", scope.SourceCode, start, end));
+                        return res.Failure(new Error($"Cannot convert '{args[0].Type}' to a double.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                 }
 
-                return RuntimeResult.Null(scope.SourceCode);
             }), true);
 
-            env.DeclareVar("input", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("input", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 if (args.Count > 0)
@@ -108,12 +106,12 @@ namespace Stenguage.Runtime
 
                 string input = Console.ReadLine();
                 if (input == null)
-                    return res.Success(new NullValue(SourceCode));
+                    return res.Success(new NullValue());
 
-                return res.Success(new StringValue(input, SourceCode));
+                return res.Success(new StringValue(input));
             }), true);
 
-            env.DeclareVar("int", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("int", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -124,44 +122,44 @@ namespace Stenguage.Runtime
                     new List<RuntimeValueType> { RuntimeValueType.String, RuntimeValueType.Number },
                 });
                 if (type == -1)
-                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                    return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                 switch (type)
                 {
                     case 0:
-                        return res.Success(new NumberValue((int)((NumberValue)args[0]).Value, scope.SourceCode));
+                        return res.Success(new NumberValue((int)((NumberValue)args[0]).Value));
                     case 1:
-                        return res.Success(new NumberValue(((BooleanValue)args[0]).Value ? 1 : 0, scope.SourceCode));
+                        return res.Success(new NumberValue(((BooleanValue)args[0]).Value ? 1 : 0));
                     case 2:
                         StringValue str = (StringValue)args[0];
                         if (!int.TryParse(str.Value, out int value))
                         {
-                            return res.Failure(new Error($"Cannot convert '{str.Value}' to an integer.", scope.SourceCode, start, end));
+                            return res.Failure(new Error($"Cannot convert '{str.Value}' to an integer.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                         }
 
-                        return res.Success(new NumberValue(value, scope.SourceCode));
+                        return res.Success(new NumberValue(value));
                     case 3:
                         str = (StringValue)args[0];
                         NumberValue b = (NumberValue)args[1];
                         if (b.Value % 1 != 0)
                         {
-                            return res.Failure(new Error("Base must be an integer.", scope.SourceCode, start, end));
+                            return res.Failure(new Error("Base must be an integer.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                         }
 
                         try
                         {
-                            return res.Success(new NumberValue(Convert.ToInt16(str.Value, (int)b.Value), scope.SourceCode));
+                            return res.Success(new NumberValue(Convert.ToInt16(str.Value, (int)b.Value)));
                         } 
                         catch (FormatException)
                         {
-                            return res.Failure(new Error("Input must be a valid value.", scope.SourceCode, start, end));
+                            return res.Failure(new Error("Input must be a valid value.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                         }
                     default:
-                        return res.Failure(new Error($"Error: Cannot convert '{args[0].Type}' to an integer.", scope.SourceCode, start, end));
+                        return res.Failure(new Error($"Error: Cannot convert '{args[0].Type}' to an integer.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                 }
             }), true);
 
-            env.DeclareVar("double", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("double", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -169,7 +167,7 @@ namespace Stenguage.Runtime
                     new List<RuntimeValueType> { RuntimeValueType.String }
                 });
                 if (type == -1)
-                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                    return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                 switch (type)
                 {
@@ -177,25 +175,25 @@ namespace Stenguage.Runtime
                         StringValue str = (StringValue)args[0];
                         if (!double.TryParse(str.Value, out double value))
                         {
-                            return res.Failure(new Error($"Cannot convert '{str.Value}' to a double.", scope.SourceCode, start, end));
+                            return res.Failure(new Error($"Cannot convert '{str.Value}' to a double.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                         }
 
-                        return res.Success(new NumberValue(value, scope.SourceCode));
+                        return res.Success(new NumberValue(value));
                     default:
-                        return res.Failure(new Error($"Cannot convert '{args[0].Type}' to a double.", scope.SourceCode, start, end));
+                        return res.Failure(new Error($"Cannot convert '{args[0].Type}' to a double.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                 }
             }), true);
 
-            env.DeclareVar("time", new ObjectValue(SourceCode, new Dictionary<string, RuntimeValue>
+            env.DeclareVar("time", new ObjectValue(new Dictionary<string, RuntimeValue>
             {
-                ["epoch"] = new NativeFnValue((args, scope, start, end) =>
+                ["epoch"] = new NativeFnValue((args, ctx) =>
                 {
                     RuntimeResult res = new RuntimeResult();
                     if (CheckArguments(args) == -1)
-                        return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
-                    return res.Success(new NumberValue(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), scope.SourceCode));
+                        return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
+                    return res.Success(new NumberValue(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
                 }),
-                ["sleep"] = new NativeFnValue((args, scope, start, end) =>
+                ["sleep"] = new NativeFnValue((args, ctx) =>
                 {
                     RuntimeResult res = new RuntimeResult();
                     int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -203,20 +201,20 @@ namespace Stenguage.Runtime
                         new List<RuntimeValueType> { RuntimeValueType.Number }
                     });
                     if (type == -1)
-                        return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                        return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                     double value = ((NumberValue)args[0]).Value;
                     if (value % 1 != 0)
                     {
-                        return res.Failure(new Error("Invalid First argument of sleep function must be an integer.", scope.SourceCode, start, end));
+                        return res.Failure(new Error("Invalid First argument of sleep function must be an integer.", ctx.Env.SourceCode, ctx.Start, ctx.End));
                     }
 
                     Thread.Sleep((int)value);
-                    return res.Success(new NullValue(scope.SourceCode));
+                    return RuntimeResult.Null();
                 })
             }), true);
 
-            env.DeclareVar("range", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("range", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -226,7 +224,7 @@ namespace Stenguage.Runtime
                     new List<RuntimeValueType> { RuntimeValueType.Number, RuntimeValueType.Number, RuntimeValueType.Number },
                 });
                 if (type == -1)
-                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                    return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                 double s = 0;
                 double e = 0;
@@ -253,13 +251,13 @@ namespace Stenguage.Runtime
                 List<RuntimeValue> result = new List<RuntimeValue>();
                 for (double i = s; i < e; i += step)
                 {
-                    result.Add(new NumberValue(i, SourceCode));
+                    result.Add(new NumberValue(i));
                 }
 
-                return res.Success(new ListValue(result, SourceCode));
+                return res.Success(new ListValue(result));
             }), true);
 
-            env.DeclareVar("len", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("len", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -268,20 +266,20 @@ namespace Stenguage.Runtime
                     new List<RuntimeValueType> { RuntimeValueType.List },
                 });
                 if (type == -1)
-                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                    return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                 switch (type)
                 {
                     case 0:
-                        return res.Success(new NumberValue(((StringValue)args[0]).Value.Length, SourceCode));
+                        return res.Success(new NumberValue(((StringValue)args[0]).Value.Length));
                     case 1:
-                        return res.Success(new NumberValue(((ListValue)args[0]).Items.Count, SourceCode));
+                        return res.Success(new NumberValue(((ListValue)args[0]).Items.Count));
                     default:
-                        return res.Success(new NullValue(SourceCode));
+                        return res.Success(new NullValue());
                 }
             }), true);
 
-            env.DeclareVar("type", new NativeFnValue((args, scope, start, end) =>
+            env.DeclareVar("type", new NativeFnValue((args, ctx) =>
             {
                 RuntimeResult res = new RuntimeResult();
                 int type = CheckArguments(args, new List<List<RuntimeValueType>>
@@ -289,14 +287,14 @@ namespace Stenguage.Runtime
                     new List<RuntimeValueType> { RuntimeValueType.Any },
                 });
                 if (type == -1)
-                    return res.Failure(new Error("Invalid parameter types.", scope.SourceCode, start, end));
+                    return res.Failure(new Error("Invalid parameter types.", ctx.Env.SourceCode, ctx.Start, ctx.End));
 
                 switch (type)
                 {
                     case 0:
-                        return res.Success(new StringValue(args[0].Type.ToString(), SourceCode));
+                        return res.Success(new StringValue(args[0].Type.ToString()));
                     default:
-                        return res.Success(new NullValue(SourceCode));
+                        return res.Success(new NullValue());
                 }
             }), true);
         }

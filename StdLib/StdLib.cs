@@ -1,39 +1,38 @@
-﻿using Stenguage;
-using Stenguage.Runtime;
+﻿using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
 namespace StdLib
 {
     public class StdLib
     {
-        public static RuntimeResult index(Stenguage.Runtime.Environment scope, Position start, Position end,
+        public static RuntimeResult index(Context ctx,
                                           StringValue source, StringValue value)
         {
-            return new RuntimeResult().Success(new NumberValue(source.Value.IndexOf(value.Value), scope.SourceCode));
+            return new RuntimeResult().Success(new NumberValue(source.Value.IndexOf(value.Value)));
         }
 
-        public static RuntimeResult contains(Stenguage.Runtime.Environment scope, Position start, Position end, 
+        public static RuntimeResult contains(Context ctx,
                                              StringValue source, StringValue value)
         {
-            return new RuntimeResult().Success(new BooleanValue(source.Value.Contains(value.Value), scope.SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(source.Value.Contains(value.Value)));
         }
 
-        public static RuntimeResult contains(Stenguage.Runtime.Environment scope, Position start, Position end,
+        public static RuntimeResult contains(Context ctx,
                                              ListValue source, RuntimeValue value)
         {
-            return new RuntimeResult().Success(new BooleanValue(source.Items.Contains(value), scope.SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(source.Items.Contains(value)));
         }
 
-        public static RuntimeResult substring(Stenguage.Runtime.Environment scope, Position start, Position end,
+        public static RuntimeResult substring(Context ctx,
                                               StringValue source, NumberValue startIndex, NumberValue length)
         {
-            return new RuntimeResult().Success(new StringValue(source.Value.Substring((int)startIndex.Value, (int)length.Value), scope.SourceCode));
+            return new RuntimeResult().Success(new StringValue(source.Value.Substring((int)startIndex.Value, (int)length.Value)));
         }
 
-        public static RuntimeResult cls(Stenguage.Runtime.Environment scope, Position start, Position end)
+        public static RuntimeResult cls(Context ctx)
         {
             Console.Clear();
-            return RuntimeResult.Null(scope.SourceCode);
+            return RuntimeResult.Null();
         }
 
     }

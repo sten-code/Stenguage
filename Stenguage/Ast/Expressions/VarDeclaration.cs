@@ -20,7 +20,7 @@ namespace Stenguage.Ast.Expressions
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
             RuntimeResult res = new RuntimeResult();
-            RuntimeValue value = new NullValue(env.SourceCode);
+            RuntimeValue value = new NullValue();
             if (Value != null)
             {
                 value = res.Register(Value.Evaluate(env));

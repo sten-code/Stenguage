@@ -11,108 +11,105 @@ namespace Stenguage.Runtime.Values
         Boolean,
         Object,
         List,
-        NativeFn,
         Function,
     }
 
     public abstract class RuntimeValue
     {
         public RuntimeValueType Type { get; set; }
-        public string SourceCode { get; set; }
 
-        public RuntimeValue(RuntimeValueType type, string sourceCode)
+        public RuntimeValue(RuntimeValueType type)
         {
             Type = type;
-            SourceCode = sourceCode;
         }
 
         public abstract string ValueString();
 
         // Compare Operations
-        public virtual RuntimeResult CompareEE(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult CompareEE(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Success(new BooleanValue(this == right, SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(this == right));
         }
-        public virtual RuntimeResult CompareNE(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult CompareNE(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Success(new BooleanValue(this != right, SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(this != right));
         }
-        public virtual RuntimeResult CompareLT(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult CompareLT(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("<", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("<", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult CompareLTE(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult CompareLTE(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("<=", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("<=", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult CompareGT(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult CompareGT(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError(">", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError(">", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult CompareGTE(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult CompareGTE(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError(">=", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError(">=", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult And(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult And(RuntimeValue right, Context ctx)
         {
             return new RuntimeResult().Success(right);
         }
-        public virtual RuntimeResult Or(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Or(RuntimeValue right, Context ctx)
         {
             return new RuntimeResult().Success(this);
         }
 
         // Arithmetic Operations
-        public virtual RuntimeResult Add(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Add(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("+", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("+", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult Sub(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Sub(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("-", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("-", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult Mul(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Mul(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("*", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("*", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult Div(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Div(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("/", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("/", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult Mod(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Mod(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("%", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("%", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
-        public virtual RuntimeResult Pow(RuntimeValue right, Position start, Position end)
+        public virtual RuntimeResult Pow(RuntimeValue right, Context ctx)
         {
-            return new RuntimeResult().Failure(new OperationError("^", Type, right.Type, SourceCode, start, end));
+            return new RuntimeResult().Failure(new OperationError("^", Type, right.Type, ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
 
         // Unary Operations
-        public virtual RuntimeResult Not(Position start, Position end)
+        public virtual RuntimeResult Not(Context ctx)
         {
-            return new RuntimeResult().Success(new BooleanValue(false, SourceCode));
+            return new RuntimeResult().Success(new BooleanValue(false));
         }
-        public virtual RuntimeResult Min(Position start, Position end)
+        public virtual RuntimeResult Min(Context ctx)
         {
-            return new RuntimeResult().Failure(new Error($"Cannot do a '-' unary operator on a {Type} type.", SourceCode, start, end));
+            return new RuntimeResult().Failure(new Error($"Cannot do a '-' unary operator on a {Type} type.", ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
 
         // Indexing Operations
-        public virtual RuntimeResult SetIndex(RuntimeValue index, RuntimeValue value, Position start, Position end)
+        public virtual RuntimeResult SetIndex(RuntimeValue index, RuntimeValue value, Context ctx)
         {
-            return new RuntimeResult().Failure(new Error($"Cannot set the index on a '{Type}' type.", SourceCode, start, end));
+            return new RuntimeResult().Failure(new Error($"Cannot set the index on a '{Type}' type.", ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
 
-        public virtual RuntimeResult GetIndex(RuntimeValue index, Position start, Position end)
+        public virtual RuntimeResult GetIndex(RuntimeValue index, Context ctx)
         {
-            return new RuntimeResult().Failure(new Error($"Cannot get the index of a '{Type}' type.", SourceCode, start, end));
+            return new RuntimeResult().Failure(new Error($"Cannot get the index of a '{Type}' type.", ctx.Env.SourceCode, ctx.Start, ctx.End));
         }
 
         // Misc
-        public virtual (RuntimeResult, List<RuntimeValue>) Iterate(Position start, Position end)
+        public virtual (RuntimeResult, List<RuntimeValue>) Iterate(Context ctx)
         {
-            return (new RuntimeResult().Failure(new Error($"Cannot iterate over a '{Type}' type.", SourceCode, start, end)), new List<RuntimeValue>());
+            return (new RuntimeResult().Failure(new Error($"Cannot iterate over a '{Type}' type.", ctx.Env.SourceCode, ctx.Start, ctx.End)), new List<RuntimeValue>());
         }
     }
 }

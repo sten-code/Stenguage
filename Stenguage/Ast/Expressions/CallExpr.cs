@@ -28,35 +28,10 @@ namespace Stenguage.Ast.Expressions
 
             RuntimeValue fn = res.Register(Caller.Evaluate(env));
             if (res.ShouldReturn()) return res;
-            if (fn.Type == RuntimeValueType.NativeFn)
+            if (fn.Type == RuntimeValueType.Function)
             {
-                NativeFnValue fnValue = (NativeFnValue)fn;
-                RuntimeValue value = res.Register(fnValue.Call(args, env, Start, End));
-                if (res.ShouldReturn()) return res;
-                return res.Success(value);
-            }
-            else if (fn.Type == RuntimeValueType.Function)
-            {
-                FunctionValue fnValue = (FunctionValue)fn;
-                Runtime.Environment scope = new Runtime.Environment(env.SourceCode, fnValue.Environment);
-                for (int i = 0; i < fnValue.Parameters.Count; i++)
-                {
-                    if (scope.DeclareVar(fnValue.Parameters[i], args[i], false) == null)
-                        return res.Failure(new Error("Variable already exists", env.SourceCode, Start, End));
-                }
-
-                foreach (Expr expr in fnValue.Body)
-                {
-                    res.Register(expr.Evaluate(scope));
-                    if (res.ReturnValue != null)
-                    {
-                        RuntimeValue returnValue = res.ReturnValue;
-                        res.Reset();
-                        return res.Success(returnValue);
-                    }
-                    if (res.ShouldReturn()) return res;
-                }
-                return RuntimeResult.Null(env.SourceCode);
+                FunctionBase func = (FunctionBase)fn;
+                return func.Call(args, new Context(Start, End, fn.GetType() == typeof(FunctionValue) ? ((FunctionValue)fn).Environment : env));
             }
 
             return res.Failure(new Error("Cannot call a value that is not a function.", env.SourceCode, Start, End));

@@ -30,10 +30,10 @@ namespace Stenguage.Ast.Expressions
             }
             else
             {
-                index = new StringValue(((Identifier)Property).Symbol, env.SourceCode);
+                index = new StringValue(((Identifier)Property).Symbol);
             }
 
-            RuntimeValue result = res.Register(val.GetIndex(index, Start, End));
+            RuntimeValue result = res.Register(val.GetIndex(index, new Context(Start, End, env)));
             if (res.ShouldReturn()) return res;
             return res.Success(result);
         }

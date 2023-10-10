@@ -19,7 +19,7 @@ namespace Stenguage.Ast.Expressions
 
         public override RuntimeResult Evaluate(Runtime.Environment env)
         {
-            RuntimeValue value = env.DeclareVar(Name, new FunctionValue(Name, Parameters, env, Body, env.SourceCode), true);
+            RuntimeValue value = env.DeclareVar(Name, new FunctionValue(Name, Parameters, env, Body), true);
             if (value == null)
                 return new RuntimeResult().Failure(new Error("Variable already exists", env.SourceCode, Start, End));
             return new RuntimeResult().Success(value);
