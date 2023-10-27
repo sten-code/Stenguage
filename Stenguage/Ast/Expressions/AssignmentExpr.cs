@@ -38,9 +38,16 @@ namespace Stenguage.Ast.Expressions
                 RuntimeValue index;
                 if (memberExpr.Property.Kind == NodeType.Identifier)
                 {
-                    string var = ((Identifier)memberExpr.Property).Symbol;
-                    index = env.LookupVar(var);
-                    if (index == null) return res.Failure(new Error($"Cannot resolve '{var}', because it doesn't exist.", env.SourceCode, Start, End));
+                    if (val.Type == RuntimeValueType.Object)
+                    {
+                        index = new StringValue(((Identifier)memberExpr.Property).Symbol);
+                    }
+                    else
+                    {
+                        string var = ((Identifier)memberExpr.Property).Symbol;
+                        index = env.LookupVar(var);
+                        if (index == null) return res.Failure(new Error($"Cannot resolve '{var}', because it doesn't exist.", env.SourceCode, Start, End));
+                    }
                 }
                 else
                 {

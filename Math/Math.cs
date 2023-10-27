@@ -17,6 +17,24 @@ namespace Math
             return new RuntimeResult().Success(new NumberValue(System.Math.Sin(value.Value)));
         }
 
+        public static RuntimeResult tan(Context ctx,
+                                        NumberValue value)
+        {
+            return new RuntimeResult().Success(new NumberValue(System.Math.Tan(value.Value)));
+        }
+
+        public static RuntimeResult acos(Context ctx,
+                                        NumberValue value)
+        {
+            return new RuntimeResult().Success(new NumberValue(System.Math.Acos(value.Value)));
+        }
+
+        public static RuntimeResult asin(Context ctx,
+                                        NumberValue value)
+        {
+            return new RuntimeResult().Success(new NumberValue(System.Math.Asin(value.Value)));
+        }
+
         public static RuntimeResult atan2(Context ctx,
                                           NumberValue y, NumberValue x)
         {
