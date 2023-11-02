@@ -1,8 +1,7 @@
 # Stenguage
 
 <p align="center">
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="300"
-        viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="300" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve">
         <style type="text/css">
             .st0{fill-rule:evenodd;clip-rule:evenodd;fill:#14B24B;}
             .st1{fill-rule:evenodd;clip-rule:evenodd;stroke:#FFFFFF;stroke-width:15;stroke-miterlimit:10;}
