@@ -2,7 +2,6 @@
 using Stenguage.Json;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
-using System.Net;
 
 namespace Http
 {
@@ -17,7 +16,6 @@ namespace Http
                 try
                 {
                     HttpResponseMessage response = client.GetAsync(url.Value).Result;
-                    string responseBody = response.Content.ReadAsStringAsync().Result;
                     return res.Success(new ObjectValue(new Dictionary<string, RuntimeValue>
                     {
                         ["StatusCode"] = new NumberValue((int)response.StatusCode),
@@ -42,7 +40,6 @@ namespace Http
                 {
                     Console.WriteLine(body.Properties.ToJson());
                     HttpResponseMessage response = client.PostAsync(url.Value, new StringContent(body.Properties.ToJson())).Result;
-                    string responseBody = response.Content.ReadAsStringAsync().Result;
                     return res.Success(new ObjectValue(new Dictionary<string, RuntimeValue>
                     {
                         ["StatusCode"] = new NumberValue((int)response.StatusCode),

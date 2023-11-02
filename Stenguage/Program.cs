@@ -1,38 +1,38 @@
 ﻿using Stenguage.Ast;
-using Stenguage.Json;
 using Stenguage.Runtime;
 using Stenguage.Runtime.Values;
 
 namespace Stenguage
 {
+    class ProgramOptions
+    {
+        [Argument("v", "verbose", "Enable verbose mode", false)]
+        public bool Verbose { get; set; }
+
+        [Argument("i", "input", "Input file path", false, true)]
+        public string InputFile { get; set; }
+    }
+
     public class Application
     {
-        public static void LogResult(RuntimeValue result)
-        {
-            switch (result.Type)
-            {
-                case RuntimeValueType.Function:
-                    Console.WriteLine($"<Function>");
-                    break;
-                case RuntimeValueType.Object:
-                    ObjectValue obj = (ObjectValue)result;
-                    foreach (KeyValuePair<string, RuntimeValue> val in obj.Properties)
-                    {
-                        Console.Write(val.Key + " ");
-                        LogResult(val.Value);
-                    }
-                    break;
-                default:
-                    Console.WriteLine(result.ToString());
-                    break;
-            }
-        }
-
         public static void Main(string[] args)
         {
-            if (args.Length != 0)
+            ArgumentParser parser = new ArgumentParser();
+            ProgramOptions options = parser.Parse<ProgramOptions>(args);
+
+            if (options.Verbose)
             {
-                string code = File.ReadAllText(args[0]);
+                Console.WriteLine("Verbose mode enabled");
+            }
+
+            if (options.InputFile != null)
+            {
+                if (!File.Exists(options.InputFile))
+                {
+                    Console.WriteLine($"The file \"{options.InputFile}\" doesn't exist.");
+                    return;
+                }
+                string code = File.ReadAllText(options.InputFile);
                 ParseResult parseResult = new Parser(code).ProduceAST();
                 if (parseResult.ShouldReturn())
                 {
@@ -75,9 +75,9 @@ namespace Stenguage
                 {
                     Console.WriteLine(result.Error);
                 }
-                else if (result.Value.Type != Runtime.Values.RuntimeValueType.Null)
+                else if (result.Value.Type != RuntimeValueType.Null)
                 {
-                    LogResult(result.Value);
+                    Console.WriteLine(result.Value);
                 }
             }
         }
