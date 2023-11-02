@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StdLib", "StdLib\StdLib.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stenguage.Tests", "Stenguage.Tests\Stenguage.Tests.csproj", "{61737262-1776-4C2C-8931-96828B71BABA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Math", "Math\Math.csproj", "{79148EFF-E332-4745-888F-437BEFBED24A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Math", "Math\Math.csproj", "{79148EFF-E332-4745-888F-437BEFBED24A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http", "Http\Http.csproj", "{EA802E7C-5E70-471E-888A-FB22A0D5C9EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{79148EFF-E332-4745-888F-437BEFBED24A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79148EFF-E332-4745-888F-437BEFBED24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79148EFF-E332-4745-888F-437BEFBED24A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA802E7C-5E70-471E-888A-FB22A0D5C9EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA802E7C-5E70-471E-888A-FB22A0D5C9EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA802E7C-5E70-471E-888A-FB22A0D5C9EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA802E7C-5E70-471E-888A-FB22A0D5C9EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
