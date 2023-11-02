@@ -1,7 +1,22 @@
-﻿using System.Reflection;
+﻿using Stenguage.Json;
+using System.Linq;
+using System.Reflection;
 
 namespace Stenguage
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    sealed class CommandAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+
+        public CommandAttribute(string name, string description)
+        {
+            Name = name;
+            Description = description;
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     sealed class ArgumentAttribute : Attribute
     {
@@ -21,26 +36,27 @@ namespace Stenguage
         }
     }
 
-    class ArgumentParser
+    public class ArgumentParser
     {
         public T Parse<T>(string[] args) where T : new()
         {
-            T options = new T();
-            var propertyDictionary = GetArgumentProperties<T>();
+            return (T)Parse(typeof(T), args);
+        }
+
+        public object Parse(Type type, string[] args)
+        {
+            var options = Activator.CreateInstance(type);
+            var argumentDictionary = GetArgumentProperties(type);
+            var subcommandDictionary = GetSubCommandProperties(type);
 
             for (int i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
-                if (arg.StartsWith("-"))
+                if (arg[0] == '-')
                 {
-                    if (arg == "--help" || arg == "-h")
-                    {
-                        DisplayHelp(propertyDictionary);
-                        return options;
-                    }
-
-                    string argName = arg.StartsWith("--") ? arg.Substring(2) : arg.Substring(1);
-                    if (propertyDictionary.TryGetValue(argName, out PropertyInfo property))
+                    string argName = arg.Substring(1);
+                    if (arg[1] == '-') argName = argName.Substring(1);
+                    if (argumentDictionary.TryGetValue(argName, out PropertyInfo property))
                     {
                         if (property.PropertyType == typeof(bool))
                         {
@@ -55,45 +71,64 @@ namespace Stenguage
                     else
                     {
                         Console.WriteLine($"Unknown argument: {arg}");
-                        Environment.Exit(1);
+                        DisplayHelp(argumentDictionary);
                         return options;
                     }
                 }
                 else
                 {
-                    // Treat the argument as a positional argument
-                    var positionalProperties = propertyDictionary.Values
-                        .Where(prop => prop.GetCustomAttribute<ArgumentAttribute>().IsPositional)
-                        .ToList();
-
-                    if (positionalProperties.Count > 0)
+                    if (subcommandDictionary.TryGetValue(arg, out PropertyInfo property))
                     {
-                        PropertyInfo property = positionalProperties.First();
-                        property.SetValue(options, Convert.ChangeType(arg, property.PropertyType));
+                        // Treat the argument as a sub-command
+                        ArgumentParser parser = new ArgumentParser();
+                        var result = parser.Parse(property.PropertyType, args.Skip(i + 1).ToArray());
+                        property.SetValue(options, result);
+                        break;
                     }
                     else
                     {
-                        Console.WriteLine($"Unknown positional argument: {arg}");
-                        Environment.Exit(1);
-                        return options;
+                        var positionalProperties = argumentDictionary.Values
+                             .Where(prop => prop.GetCustomAttribute<ArgumentAttribute>().IsPositional)
+                             .ToList();
+
+                        if (positionalProperties.Count > 0)
+                        {
+                            PropertyInfo prop = positionalProperties.First();
+                            prop.SetValue(options, Convert.ChangeType(arg, prop.PropertyType));
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Unknown positional argument: {arg}");
+                            DisplayHelp(argumentDictionary);
+                            return options;
+                        }
                     }
                 }
             }
 
             // Check if required arguments are missing
-            var missingRequiredArguments = propertyDictionary.Values
+            List<PropertyInfo> missingRequiredArguments = argumentDictionary.Values
                 .Where(prop => prop.GetCustomAttribute<ArgumentAttribute>().IsRequired && prop.GetValue(options) == null)
                 .ToList();
+
+            // Remove duplicates
+            List<ArgumentAttribute> missingRequiredArgumentsList = new List<ArgumentAttribute>();
+            foreach (PropertyInfo argument in missingRequiredArguments)
+            {
+                ArgumentAttribute attr = argument.GetCustomAttribute<ArgumentAttribute>();
+                if (!missingRequiredArgumentsList.Contains(attr))
+                {
+                    missingRequiredArgumentsList.Add(attr);
+                }
+            }
 
             if (missingRequiredArguments.Count > 0)
             {
                 Console.WriteLine("Required argument(s) missing:");
-                foreach (var missingArg in missingRequiredArguments)
+                foreach (ArgumentAttribute missingArg in missingRequiredArgumentsList)
                 {
-                    var attribute = missingArg.GetCustomAttribute<ArgumentAttribute>();
-                    Console.WriteLine($"  -{attribute.ShortName} or --{attribute.LongName}: {attribute.Description}");
+                    Console.WriteLine($"  -{missingArg.ShortName}, --{missingArg.LongName}: {missingArg.Description}");
                 }
-                Environment.Exit(1);
             }
 
             return options;
@@ -102,17 +137,27 @@ namespace Stenguage
         private void DisplayHelp(Dictionary<string, PropertyInfo> propertyDictionary)
         {
             Console.WriteLine("Available Commands:");
-            foreach (var kvp in propertyDictionary)
+
+            // Remove duplicates
+            List<ArgumentAttribute> argumentsList = new List<ArgumentAttribute>();
+            foreach (PropertyInfo argument in propertyDictionary.Values)
             {
-                var attribute = kvp.Value.GetCustomAttribute<ArgumentAttribute>();
+                ArgumentAttribute attr = argument.GetCustomAttribute<ArgumentAttribute>();
+                if (!argumentsList.Contains(attr))
+                {
+                    argumentsList.Add(attr);
+                }
+            }
+
+            foreach (var attribute in argumentsList)
+            {
                 Console.WriteLine($"  -{attribute.ShortName}, --{attribute.LongName}: {attribute.Description}");
             }
-            Console.WriteLine("  -h, --help: Show this help message");
         }
 
-        private Dictionary<string, PropertyInfo> GetArgumentProperties<T>()
+        private Dictionary<string, PropertyInfo> GetArgumentProperties(Type t)
         {
-            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var propertyDictionary = new Dictionary<string, PropertyInfo>();
 
             foreach (var property in properties)
@@ -127,6 +172,39 @@ namespace Stenguage
 
             return propertyDictionary;
         }
-    }
 
+        private Dictionary<ArgumentAttribute, PropertyInfo> GetRequiredArguments(Type t)
+        {
+            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var propertyDictionary = new Dictionary<ArgumentAttribute, PropertyInfo>();
+
+            foreach (var property in properties)
+            {
+                var attribute = property.GetCustomAttribute<ArgumentAttribute>();
+                if (attribute != null && attribute.IsRequired)
+                {
+                    propertyDictionary[attribute] = property;
+                }
+            }
+
+            return propertyDictionary;
+        }
+
+        private Dictionary<string, PropertyInfo> GetSubCommandProperties(Type t)
+        {
+            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var propertyDictionary = new Dictionary<string, PropertyInfo>();
+
+            foreach (var property in properties)
+            {
+                var attribute = property.PropertyType.GetCustomAttribute<CommandAttribute>();
+                if (attribute != null)
+                {
+                    propertyDictionary[attribute.Name] = property;
+                }
+            }
+
+            return propertyDictionary;
+        }
+    }
 }

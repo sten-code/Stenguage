@@ -15,13 +15,15 @@ namespace Http
             {
                 try
                 {
-                    HttpResponseMessage response = client.GetAsync(url.Value).Result;
-                    return res.Success(new ObjectValue(new Dictionary<string, RuntimeValue>
+                    using (HttpResponseMessage response = client.GetAsync(url.Value).Result)
                     {
-                        ["StatusCode"] = new NumberValue((int)response.StatusCode),
-                        ["Content"] = new StringValue(response.Content.ReadAsStringAsync().Result),
-                        ["IsSuccess"] = new BooleanValue(response.IsSuccessStatusCode)
-                    }));
+                        return res.Success(new ObjectValue(new Dictionary<string, RuntimeValue>
+                        {
+                            ["StatusCode"] = new NumberValue((int)response.StatusCode),
+                            ["Content"] = new StringValue(response.Content.ReadAsStringAsync().Result),
+                            ["IsSuccess"] = new BooleanValue(response.IsSuccessStatusCode)
+                        }));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -39,13 +41,15 @@ namespace Http
                 try
                 {
                     Console.WriteLine(body.Properties.ToJson());
-                    HttpResponseMessage response = client.PostAsync(url.Value, new StringContent(body.Properties.ToJson())).Result;
-                    return res.Success(new ObjectValue(new Dictionary<string, RuntimeValue>
+                    using (HttpResponseMessage response = client.PostAsync(url.Value, new StringContent(body.Properties.ToJson())).Result)
                     {
-                        ["StatusCode"] = new NumberValue((int)response.StatusCode),
-                        ["Content"] = new StringValue(response.Content.ReadAsStringAsync().Result),
-                        ["IsSuccess"] = new BooleanValue(response.IsSuccessStatusCode)
-                    }));
+                        return res.Success(new ObjectValue(new Dictionary<string, RuntimeValue>
+                        {
+                            ["StatusCode"] = new NumberValue((int)response.StatusCode),
+                            ["Content"] = new StringValue(response.Content.ReadAsStringAsync().Result),
+                            ["IsSuccess"] = new BooleanValue(response.IsSuccessStatusCode)
+                        }));
+                    }
                 }
                 catch (Exception ex)
                 {
