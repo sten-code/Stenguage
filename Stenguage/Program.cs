@@ -1,10 +1,8 @@
 ﻿using Stenguage.Ast;
 using Stenguage.Json;
 using Stenguage.Runtime;
-using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace Stenguage
 {
@@ -14,6 +12,9 @@ namespace Stenguage
         [Argument("v", "verbose", "Enable verbose mode")]
         public bool Verbose { get; set; }
 
+        [Argument("i", "input", "The input file to run.", false, true)]
+        public string InputFile { get; set; }
+
         // Sub-commands
         public InstallOptions Install { get; set; }
         public RunOptions Run { get; set; }
@@ -22,8 +23,8 @@ namespace Stenguage
     [Command("install", "Install Library through the package manager.")]
     class InstallOptions
     {
-        [Argument("u", "url", "The url to the GitHub Repository.", true, true)]
-        public string Url { get; set; }
+        [Argument("r", "repo", "The url to the GitHub Repository.", true, true)]
+        public string Repo { get; set; }
     }
 
     [Command("run", "Run a Stenguage script.")]
@@ -40,9 +41,9 @@ namespace Stenguage
             ArgumentParser parser = new ArgumentParser();
             ProgramOptions options = parser.Parse<ProgramOptions>(args);
 
-            if (options.Install?.Url != null)
+            if (options.Install?.Repo != null)
             {
-                Install(options.Install.Url);
+                Install(options.Install.Repo);
                 return;
             }
 
@@ -54,6 +55,18 @@ namespace Stenguage
                     return;
                 }
                 string code = File.ReadAllText(options.Run.InputFile);
+                Run(code);
+                return;
+            }
+
+            if (options.InputFile != null)
+            {
+                if (!File.Exists(options.InputFile))
+                {
+                    Console.WriteLine($"The file \"{options.InputFile}\" doesn't exist.");
+                    return;
+                }
+                string code = File.ReadAllText(options.InputFile);
                 Run(code);
                 return;
             }
@@ -90,18 +103,21 @@ namespace Stenguage
             Directory.Delete(directory);
         }
 
-        private static void Install(string url)
+        private static void Install(string repo)
         {
+            if (!Uri.IsWellFormedUriString(repo, UriKind.Absolute))
+                repo = "https://github.com/" + repo;
+
             string cache = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "cache");
-            string name = new Uri(url).PathAndQuery;
+            string name = new Uri(repo).PathAndQuery;
             string path = Path.Combine(cache, Path.Combine(string.Join("", name.Split('.').SkipLast(name.Count(c => c == '.'))).Split('/')));
 
             if (Directory.Exists(path))
                 DeleteDirectory(path);
 
-            Console.WriteLine($"Cloning {url}");
+            Console.WriteLine($"Cloning {repo}");
 
-            if (RunCmd("git", $"clone {url} \"{path}\"") != 0)
+            if (RunCmd("git", $"clone {repo} \"{path}\"") != 0)
                 return;
 
             string[] solutionFiles = Directory.GetFiles(path, "*.sln", SearchOption.TopDirectoryOnly);
@@ -110,7 +126,7 @@ namespace Stenguage
                 if (BuildSolution(solutionFiles[0]))
                     Console.WriteLine("Successfully installed the library.");
                 else
-                    Console.WriteLine("An error occurred while installing the library.");
+                    Console.WriteLine("Error: An error occurred while installing the library.");
             }
             else
             {
